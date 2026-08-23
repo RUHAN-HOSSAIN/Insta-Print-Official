@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300..700&display=swap');
+
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+html,
+body,
+#root {
+	overflow-x: hidden;
+}
+
+@theme {
+  --color-light-blue: #bbdcff;
+  --color-blue: #1a66ff;
+  --color-dark-blue-0: #0040c1;
+  --color-dark-blue-1: #002896;
+  --color-dark-blue-2: #010f39;
+  --color-gray-blue: #4b5563;
+  --color-primary: #1a66ff;
+  --color-secondary: #010f39;
+  --color-accent: #f5d97a;
+  --color-soft: #f5f7fb;
+
+  --shadow-card: 0 20px 45px -28px rgba(15, 23, 42, 0.45);
+
+  --font-roboto: "Roboto", sans-serif;
+  --font-jura: "Jura", sans-serif;
+  --font-spaceG: "Space Grotesk", sans-serif;
+
+  /* --breakpoint-customBreak-1: 1160px;
+  --breakpoint-navCustomBreak-1: 1361px;
+  --breakpoint-navCustomBreak-2: 1313px;
+  --breakpoint-navCustomBreak-3: 1243px; */
+}
