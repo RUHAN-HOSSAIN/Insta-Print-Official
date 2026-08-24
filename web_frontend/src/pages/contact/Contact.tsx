@@ -1,0 +1,10 @@
+
+const ContactUs = () => {
+  return (
+    <div className="bg-slate-200 h-screen">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium reprehenderit rerum cupiditate commodi nobis suscipit fugit nesciunt veritatis. Saepe pariatur eveniet earum numquam. Saepe ipsam reiciendis ipsa. Laboriosam, reprehenderit id. Eius, odio pariatur dolores totam animi odit consequatur culpa, impedit hic, consectetur reprehenderit architecto in reiciendis! Neque iure tempora hic, nulla magni praesentium dolorum quam molestiae quod pariatur debitis natus quia eveniet, error quidem dolores consequuntur accusamus autem incidunt? Perferendis labore veritatis quam beatae quae cupiditate et? Cumque quibusdam voluptatum, debitis quia blanditiis temporibus optio animi ab distinctio! Culpa, mollitia. Soluta obcaecati aliquid aut praesentium nihil. Eos veniam veritatis doloremque. Ipsa, optio inventore sit asperiores hic consequuntur fugit sapiente. Vel assumenda sapiente repellat optio consequuntur perspiciatis velit sequi libero alias officia odit repellendus quo quod, incidunt reprehenderit nam est sed temporibus. Nobis delectus, harum iure autem omnis eum repudiandae provident esse officiis quia impedit fugiat aliquam unde aperiam a! Asperiores earum nobis incidunt nesciunt totam. Molestiae voluptate beatae non quam at recusandae deserunt, repudiandae fuga unde similique tempore eius consequuntur facere, explicabo eveniet dolorum corrupti ex iste aut minima eum? Voluptates sequi pariatur veniam molestias nam alias aliquid, animi magni voluptatum nemo dolores nisi cum eaque natus laborum repellendus autem placeat consequuntur laudantium fugiat ullam deleniti molestiae inventore dolore. Ipsam consequatur iure suscipit, veniam saepe, quis corrupti quidem perferendis unde accusantium optio doloremque laboriosam molestias dicta esse, voluptatem minus. Odit quos laboriosam consequuntur. Fuga impedit omnis at facilis. Nulla ex nam provident odio tenetur necessitatibus culpa quisquam ipsum quos? Inventore!
+    </div>
+  )
+}
+
+export default ContactUs
