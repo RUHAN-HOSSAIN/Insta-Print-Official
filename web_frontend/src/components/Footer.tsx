@@ -10,9 +10,9 @@ const Footer = () => {
 
   return (
     <>
-      <div className=" bg-linear-to-tr from-blue-500 to-white from-60% via-85% to-100% font-spaceG flex max-sm:flex-col-reverse justify-between items-start px-10 min-[500px]:px-15 min-[800px]:px-25 lg:px-35 xl:px-50 mt-5 py-10 min-[500px]:py-15 sm:py-20 lg:py-30 border-t border-gray-200">
-        {/* Company links */}
-        <div className="flex-2 w-full flex max-[400px]:flex-col gap-15 justify-between max-sm:mt-20 sm:mr-20 md:mr-30 lg:mr-50">
+      <div className=" bg-linear-to-tr from-blue-700 to-blue-300  font-spaceG flex max-sm:flex-col-reverse justify-between items-start px-10 min-[500px]:px-15 min-[800px]:px-25 lg:px-35 xl:px-50 mt-5 py-10 min-[500px]:py-15 sm:py-20 lg:py-30 border-t border-gray-200">
+        <div className="flex-6/10 w-full flex max-[400px]:flex-col gap-15 justify-between max-sm:pt-20 max-sm:pb-10 sm:pr-20 md:pr-30 lg:pr-50">
+          {/* Company links */}
           <div className="flex flex-col gap-3">
             <h4 className="text-base font-semibold tracking-wider uppercase mb-5">
               Company
@@ -52,7 +52,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col gap-3">
+        <div className="flex-3/10 flex flex-col gap-3">
           <h4 className="text-base font-semibold tracking-wider uppercase mb-5">
             Send feedback
           </h4>
@@ -89,7 +89,7 @@ const Footer = () => {
             ),
           )}
         </div>
-        <div>
+        <div className="text-center">
           Insta Print © {new Date().getFullYear()}. Created with ❤️ by Ruhan.
         </div>
       </div>
