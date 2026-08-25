@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 
 import { navData } from "../../constant/navData";
+import { legal } from "../../constant/footerData";
 import { handleHeaderNavClick } from "../utils/headerScroll";
 
 type MobileSidebarProps = {
@@ -82,6 +83,26 @@ const MobileSidebar = ({
           >
             Try Now
           </Link>
+
+          <div className="flex text-xs flex-wrap gap-4 mt-6 text-gray-600">
+            {legal.map((item, index) => (
+              <Link
+                key={index}
+                to={item.to}
+                onClick={(event) =>
+                  handleHeaderNavClick({
+                    event,
+                    to: item.to,
+                    pathname,
+                    closeMenu: onClose,
+                  })
+                }
+                className=""
+              >
+                {item.title}
+              </Link>
+            ))}
+          </div>
         </nav>
       </div>
     </>
