@@ -90,7 +90,7 @@ const Footer = () => {
           )}
         </div>
         <div>
-          Insta Print © {new Date().getFullYear()}. All rights reserved.
+          Insta Print © {new Date().getFullYear()}. Created with ❤️ by Ruhan.
         </div>
       </div>
     </>

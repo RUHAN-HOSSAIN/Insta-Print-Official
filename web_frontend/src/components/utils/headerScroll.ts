@@ -12,7 +12,7 @@ const scrollToHash = (hash: string) => {
 
 const syncHeaderHeightVariable = (
   headerElement: HTMLElement | null,
-  variableName = "--header-height"
+  variableName = "--header-height",
 ) => {
   if (!headerElement) {
     return () => {};

@@ -12,6 +12,9 @@ import TermCondition from "../pages/legal/TermCondition";
 import RefundReturn from "../pages/legal/RefundReturn";
 import CancelPolicy from "../pages/legal/CancelPolicy";
 
+import PaymentProcess from "../pages/pricing/PaymentProcess";
+import UploadProcess from "../pages/learn/UploadProcess";
+
 const Layout = () => {
   const location = useLocation();
 
@@ -37,6 +40,9 @@ const AppRoutes = () => {
         <Route path="/terms-conditions" element={<TermCondition />} />
         <Route path="/refund-return" element={<RefundReturn />} />
         <Route path="/cancel-policy" element={<CancelPolicy />} />
+
+        <Route path="/payment" element={<PaymentProcess />} />
+        <Route path="/upload" element={<UploadProcess />} />
       </Route>
     </Routes>
   );

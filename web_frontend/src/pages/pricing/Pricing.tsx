@@ -4,7 +4,17 @@ import { pricingData } from "../../constant/pricing";
 
 const PrintRates = () => {
   return (
-    <div className="px-5 min-[500px]:px-10 md:px-15 py-15 sm:py-20 md:py-25 lg:py-30 font-spaceG">
+    <div className="relative px-7 min-[500px]:px-10 md:px-15 py-15 sm:py-20 md:py-25 lg:py-30 font-spaceG">
+      <div
+          className="absolute inset-0 -z-5 pointer-events-none opacity-100"
+          style={{
+            backgroundImage: `
+                repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 20px),
+                repeating-linear-gradient(-45deg, rgba(0,0,0,0.1) 0, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 20px)
+              `,
+            backgroundSize: "40px 40px",
+          }}
+        />
 
       <div className="flex flex-col gap-4 items-center justify-center">
         <h4 className="text-sm sm:text-base font-bold text-blue">Printing Cost</h4>
@@ -12,7 +22,7 @@ const PrintRates = () => {
       </div>
 
       <div className="font-roboto flex max-sm:flex-col items-center justify-center gap-10 max-sm:gap-20 mt-20">
-        <div className="min-w-70 relative flex flex-col gap-7 border border-gray-300 rounded-xl shadow-lg p-5 w-1/3">
+        <div className="bg-white min-w-70 relative flex flex-col gap-7 border border-gray-300 rounded-xl shadow-lg p-5 w-1/3">
           <div className="float-page absolute -top-5 right-5 w-16 h-20 bg-white rounded-lg shadow-md p-3 flex flex-col gap-2 border border-gray-300">
             <div className="w-1/2 h-1.5 rounded bg-gray-800" />
             <div className="w-full h-1 rounded bg-gray-300" />
@@ -41,7 +51,7 @@ const PrintRates = () => {
         </div>
       </div>
 
-      <div className="text-gray-500 mt-20 text-center font-roboto">
+      <div className="text-gray-500 mt-20 text-center font-roboto tracking-wide">
         No minimum order · Volume discounts applied automatically · NB: Dynamic charge may apply for heavy color documents.
       </div>
     </div>

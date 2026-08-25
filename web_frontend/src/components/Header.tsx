@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -24,7 +23,7 @@ const Header = () => {
         .filter((item) => item.to.startsWith("/#"))
         .map((item) => ({ to: item.to, id: item.to.slice(2) })),
     ],
-    []
+    [],
   );
   const displayActiveNavTo = location.pathname === "/" ? activeNavTo : "";
 
@@ -80,7 +79,7 @@ const Header = () => {
             <img src={Logo} alt="Logo" className="h-8 sm:h-9 md:h-10 lg:h-12" />
           </Link>
         </div>
-        
+
         <div className="max-sm:hidden flex-1 flex items-center justify-between gap-5 md:gap-7 font-spaceG lg:text-[17px] text-black cursor-pointer">
           {navData.map((item: { title: string; to: string }, index: number) => (
             <Link
@@ -102,17 +101,17 @@ const Header = () => {
             </Link>
           ))}
 
-          <Link 
-           to="/"
-           onClick={(event) =>
-                handleHeaderNavClick({
-                  event,
-                  to: "/",
-                  pathname: location.pathname,
-                  closeMenu: () => setIsMenuOpen(false),
-                })
-              }
-           className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 shadow-md rounded-md hover:scale-105 transition-all cursor-pointer shrink-0"
+          <Link
+            to="/"
+            onClick={(event) =>
+              handleHeaderNavClick({
+                event,
+                to: "/",
+                pathname: location.pathname,
+                closeMenu: () => setIsMenuOpen(false),
+              })
+            }
+            className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 shadow-md rounded-md hover:scale-105 transition-all cursor-pointer shrink-0"
           >
             Try Now
           </Link>
@@ -125,7 +124,7 @@ const Header = () => {
               onClick={() => setIsMenuOpen(false)}
             />
           ) : (
-            <HamburgerIcon 
+            <HamburgerIcon
               className="text-slate-800"
               onClick={() => setIsMenuOpen(true)}
             />

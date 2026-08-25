@@ -2,7 +2,7 @@ const Body = () => {
   return (
     <>
       <div style={{ height: "var(--header-height, 72px)" }} />
-      <div className="h-screen">
+      <div className="h-screen relative">
         <div
           className="absolute inset-0 -z-5 pointer-events-none opacity-100"
           style={{
