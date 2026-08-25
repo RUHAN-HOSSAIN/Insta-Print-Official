@@ -10,7 +10,7 @@ const Footer = () => {
 
   return (
     <>
-      <div className="bg-linear-to-tr from-blue-500 to-white from-60% via-85% to-100% font-spaceG flex max-sm:flex-col-reverse justify-between items-start px-10 min-[500px]:px-15 min-[800px]:px-25 lg:px-35 xl:px-50 mt-5 py-10 min-[500px]:py-15 sm:py-20 lg:py-30 border-t border-gray-200">
+      <div className=" bg-linear-to-tr from-blue-500 to-white from-60% via-85% to-100% font-spaceG flex max-sm:flex-col-reverse justify-between items-start px-10 min-[500px]:px-15 min-[800px]:px-25 lg:px-35 xl:px-50 mt-5 py-10 min-[500px]:py-15 sm:py-20 lg:py-30 border-t border-gray-200">
         {/* Company links */}
         <div className="flex-2 w-full flex max-[400px]:flex-col gap-15 justify-between max-sm:mt-20 sm:mr-20 md:mr-30 lg:mr-50">
           <div className="flex flex-col gap-3">
@@ -68,7 +68,7 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="rounded-t-2xl mx-5 mt-2 backdrop-blur-2xl shadow-[0_-3px_15px_rgba(0,0,0,0.5)] font-jura max-[420px]:text-sm flex max-sm:flex-col gap-4 justify-between items-center px-10 md:px-20 min-[900px]:px-25 lg:px-30 py-5">
+      <div className="bg-dark-blue-1 text-white rounded-t-2xl mx-5 mt-2 backdrop-blur-2xl shadow-[0_-3px_15px_rgba(0,0,0,0.5)] font-jura max-[420px]:text-sm flex max-sm:flex-col gap-4 justify-between items-center px-10 md:px-20 min-[900px]:px-25 lg:px-30 py-5">
         <div className="flex items-center justify-center gap-5">
           Found Us on:
           {socialMedia.map(

@@ -1,8 +1,49 @@
 
+import { pricingData } from "../../constant/pricing";
+
+
 const PrintRates = () => {
   return (
-    <div className="bg-green-200 h-screen">
-      Lorem ipsum dolor sit amet consectetur adipisicing elit. Perferendis temporibus minima maxime amet. Corrupti eos quasi fugit. Perferendis exercitationem odit quo excepturi architecto eum consequuntur, dolorem iure necessitatibus temporibus, soluta reiciendis praesentium odio iste facilis eaque tenetur saepe nisi distinctio? Pariatur quam magnam, a numquam provident iusto quod tempore culpa reiciendis suscipit architecto cumque voluptatum aliquid ipsam unde enim possimus minus, distinctio adipisci ratione ea veritatis eius consectetur praesentium! Voluptatum perspiciatis culpa tempora reprehenderit repudiandae laborum expedita ipsa veritatis magnam. Placeat delectus alias error ipsa hic totam iusto ex facilis consequatur optio repudiandae quas qui accusamus, iste commodi ducimus porro, maxime eligendi reprehenderit a odit ad dicta molestias laudantium. Quisquam illo ipsa ad est totam pariatur? Nisi itaque deleniti ullam, dignissimos distinctio porro sapiente magnam in recusandae veritatis. Unde, autem perferendis necessitatibus quos totam illum cumque eius corporis, numquam aperiam adipisci odit temporibus molestiae, voluptates laborum iusto dolores! Quos vero vel ex doloremque quisquam fugiat debitis quas nobis asperiores voluptatum animi corporis nulla dolore, accusamus inventore repellendus at eligendi quidem consequatur laboriosam. Ullam beatae tempore ad enim quo illo ipsam consequuntur distinctio voluptatum earum similique ipsa, dolores numquam! Sunt natus doloribus, dicta enim inventore ipsam rerum labore alias voluptate, nesciunt dolores error rem veritatis maiores perferendis voluptates est architecto quos laborum tempora quas minus facere ducimus! Id qui officiis deleniti, accusamus odio laborum ullam, quibusdam consequuntur esse beatae earum commodi facilis nostrum quis culpa ratione veniam quidem nobis ad delectus sequi et fugiat. Numquam a deleniti quam quo harum illum necessitatibus error fuga sapiente rem. Dolor beatae nobis magni! Officiis ea obcaecati ratione, doloremque error magni, quia earum quas porro voluptatem quam adipisci rem iste commodi minima odio illo temporibus et minus quisquam. Inventore numquam consequatur, aperiam corrupti voluptas cum. Nesciunt eius necessitatibus, rerum ullam corrupti sapiente quas quia nobis ad. Fuga iure eligendi, sint quasi accusamus rem doloribus mollitia impedit perspiciatis! Aspernatur beatae iusto nulla iste maiores! Fugiat, sequi fugit tempore suscipit eaque natus dolores qui asperiores nesciunt ducimus facere obcaecati laboriosam delectus vel autem eos neque expedita fuga facilis ea, consectetur cupiditate illum non? Pariatur omnis tenetur error atque esse corporis minima a. Quos hic beatae alias ducimus eveniet voluptatum voluptatibus, autem eum numquam fugit! Omnis molestias quae ad culpa, recusandae est corporis in impedit maxime, blanditiis consectetur magni sunt deserunt dicta corrupti sit reprehenderit nemo excepturi quam placeat et. Facilis eius tempore sit fugit optio ipsa sunt tempora dolorem, molestias sequi vero at repudiandae veritatis natus deserunt, iure odio unde itaque quaerat cupiditate! Fuga eveniet dolorum atque dignissimos magnam necessitatibus accusantium cumque delectus quod, fugit alias esse iure maxime ipsam veritatis sapiente non amet tenetur exercitationem. Impedit accusantium ipsum quisquam veniam minus beatae esse eaque dolores velit!
+    <div className="px-5 min-[500px]:px-7 sm:px-10 md:px-15 py-15 sm:py-20 md:py-25 lg:py-30 font-spaceG">
+
+      <div className="flex flex-col gap-4 items-center justify-center">
+        <h4 className="text-sm sm:text-base font-bold text-blue">Printing Cost</h4>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">Pay Only for what you print</h1>
+      </div>
+
+      <div className="font-roboto flex max-sm:flex-col items-center justify-center gap-10 max-sm:gap-20 mt-20">
+        <div className="min-w-70  relative flex flex-col gap-7 border border-gray-300 rounded-xl shadow-lg p-5 w-1/3">
+          <div className="float-page absolute -top-5 right-5 w-16 h-20 bg-white rounded-lg shadow-md p-3 flex flex-col gap-2 border border-gray-300">
+            <div className="w-1/2 h-1.5 rounded bg-gray-800" />
+            <div className="w-full h-1 rounded bg-gray-300" />
+            <div className="w-4/5 h-1 rounded bg-gray-300" />
+            <div className="w-full h-1 rounded bg-gray-300" />
+          </div>
+
+          <h2 className="font-bold text-[24px]">Black & White</h2>
+          <p className="text-md text-gray-700">From <span className="font-bold text-[40px] px-4 text-blue-500">{pricingData[0].price}</span> per page</p>
+          <p className="text-sm text-gray-500">Report, Assignment, Notes and everyday Printing</p>
+          <p className="text-green-700">Discounts grow the more you print</p>
+        </div>
+
+        <div className="min-w-70 relative bg-linear-to-tr from-blue-700 from-30% to-light-blue flex flex-col gap-7 border border-gray-300 rounded-xl shadow-lg p-5 w-1/3">
+          <div className="float-page absolute -top-5 right-5 w-16 h-20 bg-white rounded-lg shadow-md p-3 flex flex-col gap-2 border border-gray-300">
+            <div className="w-1/2 h-1.5 rounded bg-purple-500" />
+            <div className="w-full h-1 rounded bg-blue-300" />
+            <div className="w-4/5 h-1 rounded bg-yellow-300" />
+            <div className="w-full h-1 rounded bg-pink-300" />
+          </div>
+
+          <h2 className="font-bold text-[24px] text-white">Color</h2>
+          <p className="text-md text-gray-200">From <span className="font-bold text-[40px] px-4 text-white">{pricingData[1].price}</span> per page</p>
+          <p className="text-sm text-gray-300">Colorful Documents and anything that needs to pop.</p>
+          <p className="text-green-300">Discounts grow the more you print</p>
+        </div>
+      </div>
+
+      <div className="text-gray-500 mt-20 text-center font-roboto">
+        No minimum order · Volume discounts applied automatically · NB: Dynamic charge may apply for heavy color documents.
+      </div>
     </div>
   )
 }
