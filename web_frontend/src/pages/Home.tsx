@@ -1,7 +1,4 @@
 
-import { useLocation } from "react-router-dom";
-import { useHomeHashScroll } from "../components/utils/headerScroll";
-
 import Contact from "./contact/Contact";
 import FAQ from "./faq/FAQ";
 import Body from "./home/Body";
@@ -10,12 +7,9 @@ import Pricing from "./pricing/Pricing";
 import AboutUs from "./contact/AboutUs";
 
 const Home = () => {
-  const location = useLocation();
   const sectionOffsetStyle = {
     scrollMarginTop: "calc(var(--header-height, 72px) + 8px)",
   };
-
-  useHomeHashScroll(location.pathname, location.hash);
 
   return (
     <>

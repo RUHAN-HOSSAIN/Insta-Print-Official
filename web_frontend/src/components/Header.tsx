@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-
 import { navData } from "../constant/navData";
 import {
   handleHeaderNavClick,

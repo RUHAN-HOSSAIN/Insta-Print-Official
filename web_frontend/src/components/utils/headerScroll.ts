@@ -41,7 +41,7 @@ type HandleHeaderNavClickParams = {
   event: MouseEvent<HTMLAnchorElement>;
   to: string;
   pathname: string;
-  closeMenu: () => void;
+  closeMenu?: () => void;
 };
 
 export const handleHeaderNavClick = ({
@@ -50,24 +50,55 @@ export const handleHeaderNavClick = ({
   pathname,
   closeMenu,
 }: HandleHeaderNavClickParams) => {
-  closeMenu();
+  closeMenu?.();
 
-  if (to !== "/" || pathname !== "/") {
+  if (!to.startsWith("/")) {
+    return;
+  }
+
+  const [targetPath, targetHashValue] = to.split("#");
+  const normalizedPath = targetPath || "/";
+  const targetHash = targetHashValue ? `#${targetHashValue}` : "";
+
+  if (normalizedPath !== "/") {
+    return;
+  }
+
+  // On same page, force smooth behavior for "/" and "/#section" clicks.
+  if (pathname !== "/") {
     return;
   }
 
   event.preventDefault();
-  window.history.replaceState(null, "", "/");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (!targetHash) {
+    window.history.replaceState(null, "", "/");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  window.history.replaceState(null, "", to);
+  scrollToHash(targetHash);
 };
 
-export const useHomeHashScroll = (pathname: string, hash: string) => {
+export const useRootRouteSmoothScroll = (pathname: string, hash: string) => {
   useEffect(() => {
-    if (pathname !== "/" || !hash) {
+    if (pathname !== "/") {
       return;
     }
 
-    scrollToHash(hash);
+    const runScroll = () => {
+      if (hash) {
+        scrollToHash(hash);
+        return;
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(runScroll);
+    });
   }, [pathname, hash]);
 };
 

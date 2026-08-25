@@ -21,19 +21,19 @@ export const company = [
 export const legal = [
   {
     title: "Privacy Policy",
-    to: "/privacy",
+    to: "/privacy-policy",
   },
   {
     title: "Terms & Conditions",
-    to: "/terms",
+    to: "/terms-conditions",
   },
   {
     title: "Refund & Return Policy",
-    to: "/refund",
+    to: "/refund-return",
   },
   {
     title: "Cancellation Policy",
-    to: "/cancellation",
+    to: "/cancel-policy",
   },
 ];
 
