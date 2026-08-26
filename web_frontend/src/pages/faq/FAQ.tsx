@@ -57,9 +57,9 @@ const FAQ = () => {
                 pathname: location.pathname,
               })
             }
-              className="text-blue-700 hover:scale-102 transition-all cursor-pointer"
+              className="text-blue-700 hover:scale-102 transition-all cursor-pointer hover:pl-1 group"
             >
-              Contact the Insta Print Team →
+              Contact the Insta Print Team <span className="group-hover:pl-1 transition-all">→</span>
             </Link>
           </div>
         </div>

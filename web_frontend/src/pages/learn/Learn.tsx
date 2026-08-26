@@ -12,7 +12,7 @@ const Learn = () => {
         }}
       />
 
-      <div className="font-spaceG flex flex-col gap-4 items-center justify-center text-center">
+      <div className="z-10 font-spaceG flex flex-col gap-4 items-center justify-center text-center">
         <h4 className="text-sm sm:text-base font-bold text-blue-200">
           How it works
         </h4>
@@ -22,17 +22,17 @@ const Learn = () => {
       </div>
 
       {/* ── Cards ── */}
-      <div className="font-roboto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mt-16">
+      <div className="z-10 font-roboto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mt-16">
         {learnData.map((item: LearnItem) => (
           <div
             key={item.id}
-            className="flex flex-col border border-gray-600 bg-white shadow-[4px_4px_15px_rgba(255,255,255,0.1)] rounded-xl overflow-hidden"
+            className="z-10 flex flex-col border border-gray-600 bg-white shadow-[4px_4px_15px_rgba(255,255,255,0.1)] rounded-xl overflow-hidden group hover:scale-103 transition-all"
           >
             <div className="w-full h-50 max-sm:h-60 overflow-hidden">
               <img
                 src={item.imgPath}
                 alt={item.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-107 transition-transform duration-300"
               />
             </div>
 
@@ -50,7 +50,7 @@ const Learn = () => {
         ))}
       </div>
 
-      <div className="font-spaceG mt-20 text-center backdrop-blur-3xl">
+      <div className="z-10 font-spaceG mt-20 text-center backdrop-blur-3xl">
         <p className="text-red-500 md:text-lg p-2 shadow-[0_0_10px_rgba(255,255,255,0.1)]">
           <b>
             <u>Note:</u>

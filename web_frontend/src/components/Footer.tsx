@@ -91,7 +91,7 @@ const Footer = () => {
 
   return (
     <>
-      <div className="relative bg-linear-to-tr from-blue-700 to-blue-300  font-spaceG flex max-sm:flex-col-reverse justify-between items-start px-10 min-[500px]:px-15 min-[800px]:px-25 lg:px-35 xl:px-50 py-10 min-[500px]:py-15 sm:py-20 lg:py-30">
+      <div className="relative bg-linear-to-tr from-blue-700 to-blue-300  font-spaceG flex max-sm:flex-col-reverse justify-between items-start px-10 min-[500px]:px-15 min-[800px]:px-25 lg:px-35 xl:px-50 py-10 min-[500px]:py-15 sm:py-20 lg:py-30 shadow-[0_-3px_10px_rgba(0,0,0,0.1)] rounded-t-2xl">
         {/* ── Circle outline pattern ── */}
         <SvgPattern color="#fff" />
 
@@ -162,8 +162,8 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="bg-dark-blue-1 text-white rounded-t-2xl mx-5 mt-2 backdrop-blur-2xl shadow-[0_-3px_15px_rgba(0,0,0,0.5)] font-jura max-[420px]:text-sm flex max-sm:flex-col gap-4 justify-between items-center px-10 md:px-20 min-[900px]:px-25 lg:px-30 py-5">
-        <div className="flex items-center justify-center gap-5">
+      <div className="bg-dark-blue-1 text-white rounded-t-2xl mx-3 mt-2 shadow-[0_-3px_15px_rgba(0,0,0,0.5)] font-jura max-[420px]:text-sm flex max-sm:flex-col gap-4 justify-between items-center px-10 md:px-20 min-[900px]:px-25 lg:px-30 py-5">
+        <div className="flex items-center justify-center gap-3 sm:gap-5">
           Found Us on:
           {socialMedia.map(
             (item: { title: string; to: string }, index: number) => (

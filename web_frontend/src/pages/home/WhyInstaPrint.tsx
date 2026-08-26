@@ -48,7 +48,7 @@ const WhyInstraPrint = () => {
 
                 {/* ── Connector line from dot to card ── */}
                 <div
-                  className={`hidden md:block absolute top-[38px] h-px w-[calc(25%-1rem)] bg-blue-200 z-0
+                  className={`hidden md:block absolute top-9.5 h-px w-[calc(25%-1rem)] bg-blue-200 z-0
                     ${
                       isLeft
                         ? "left-[calc(50%+1rem)]" // dot → right card: line goes RIGHT but card is LEFT, so flip

@@ -18,7 +18,7 @@ const WhyCard = ({
   link,
 }: WhyCardProps) => {
   return (
-    <div className="font-roboto tracking-wider bg-white rounded-2xl p-6 shadow-[0_4px_6px_rgba(0,0,0,0.5)] border border-gray-100 flex flex-col gap-3 w-full max-w-sm">
+    <div className="hover:scale-103 transition-transform duration-300 font-roboto tracking-wider bg-white rounded-2xl p-6 shadow-[0_4px_6px_rgba(0,0,0,0.5)] border border-gray-100 flex flex-col gap-3 w-full max-w-sm">
       {/* Icon box */}
       <div className="w-11 h-11 rounded-xl bg-blue-500 text-white flex items-center justify-center">
         {icon}

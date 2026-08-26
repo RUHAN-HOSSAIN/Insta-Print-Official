@@ -44,6 +44,6 @@ export const socialMedia = [
   },
   {
     title: "WhatsApp",
-    to: "https://wa.me/qr/GCDWRGHX2VH4M1",
+    to: "https://wa.me/8801932066557?text=Hello%20Insta%20Print%2C%20I%20need%20help.",
   },
 ];

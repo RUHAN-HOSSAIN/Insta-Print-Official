@@ -9,7 +9,7 @@ import {
 } from "./utils/headerScroll";
 import MobileSidebar from "./home/MobileSidebar.tsx";
 
-import Logo from "../assets/Logo.jpg";
+import Logo from "../assets/Logo3.webp";
 import { HamburgerIcon, CloseIcon } from "../assets/icons/Icons.tsx";
 
 const Header = () => {

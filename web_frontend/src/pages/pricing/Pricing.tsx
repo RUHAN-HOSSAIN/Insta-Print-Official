@@ -21,8 +21,9 @@ const PrintRates = () => {
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">Pay Only for what you print</h1>
       </div>
 
-      <div className="font-roboto flex max-sm:flex-col items-center justify-center gap-10 max-sm:gap-20 mt-20">
-        <div className="bg-white min-w-70 relative flex flex-col gap-7 border border-gray-300 rounded-xl shadow-lg p-5 w-1/3">
+      <div className="font-roboto flex max-sm:flex-col items-center justify-center sm:gap-10 md:gap-15 max-sm:gap-20 mt-20">
+
+        <div className="bg-white min-w-70 relative flex flex-col gap-7 border border-gray-300 rounded-xl shadow-lg p-5 w-1/3 hover:scale-105 transition-transform duration-300">
           <div className="float-page absolute -top-5 right-5 w-16 h-20 bg-white rounded-lg shadow-md p-3 flex flex-col gap-2 border border-gray-300">
             <div className="w-1/2 h-1.5 rounded bg-gray-800" />
             <div className="w-full h-1 rounded bg-gray-300" />
@@ -36,7 +37,7 @@ const PrintRates = () => {
           <p className="text-green-700">Discounts grow the more you print</p>
         </div>
 
-        <div className="min-w-70 relative bg-linear-to-tr from-blue-700 from-30% to-light-blue flex flex-col gap-7 border border-gray-300 rounded-xl shadow-lg p-5 w-1/3">
+        <div className="min-w-70 relative bg-linear-to-tr from-blue-700 from-30% to-light-blue flex flex-col gap-7 border border-gray-300 rounded-xl shadow-lg p-5 w-1/3 hover:scale-105 transition-transform duration-300">
           <div className="float-page absolute -top-5 right-5 w-16 h-20 bg-white rounded-lg shadow-md p-3 flex flex-col gap-2 border border-gray-300">
             <div className="w-1/2 h-1.5 rounded bg-purple-500" />
             <div className="w-full h-1 rounded bg-blue-300" />

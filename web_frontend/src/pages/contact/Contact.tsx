@@ -23,7 +23,7 @@ const ContactUs = () => {
         {contactData.map((item: ContactItem) => (
           <div
             key={item.id}
-            className="flex flex-col gap-7 sm:px-6 md:p-8 xl:px-10 py-10 md:py-15 rounded-xl bg-white max-w-sm shadow-xl"
+            className="hover:scale-105 transition-transform duration-300 flex flex-col gap-7 sm:px-6 md:p-8 xl:px-10 py-10 md:py-15 rounded-xl bg-white max-w-sm shadow-xl"
           >
             <div className="flex items-center justify-center">
               <item.icon
