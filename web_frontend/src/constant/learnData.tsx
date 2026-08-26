@@ -41,7 +41,9 @@ export const learnData: LearnItem[] = [
       <div>
         <p>Pay <i><b>exact amount</b></i> using bKash or Nagad with <b><i>Send Money</i></b>, then enter your Transaction ID.</p>
         <br />
-        <Link to="/payment" className="text-sm text-blue-500 hover:text-[15px] group transition-all">How to Pay <span className="group-hover:pl-1 transition-all">→</span></Link>
+        <Link to="/payment" className="text-sm text-blue-500 hover:text-[15px] group transition-all">
+          How to Pay <span className="group-hover:pl-1 transition-all">→</span>
+        </Link>
       </div>
     ),
     imgPath: payImg

@@ -6,7 +6,7 @@ const WhyInstraPrint = () => {
     <div className="relative px-7 min-[500px]:px-10 md:px-15 py-15 sm:py-20 md:py-25 lg:py-30 bg-linear-to-t from-[#26065D] to-[#4B00FE] overflow-hidden">
       {/* ── Dot pattern background ── */}
       <div
-        className="absolute inset-0 z-0 opacity-5"
+        className="absolute inset-0 z-0 opacity-5 pointer-events-none"
         style={{
           backgroundImage: `radial-gradient(circle, #ffffff 15px, transparent 1.5px)`,
           backgroundSize: "32px 32px",
@@ -21,7 +21,7 @@ const WhyInstraPrint = () => {
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
           Built like a print shop. Runs like an app.
         </h1>
-        <h3 className="text-sm tracking-wider text-gray-300 max-w-2xl">
+        <h3 className="text-sm tracking-wider text-gray-300 max-w-2xl text-center">
           Professional printing without the queue, the drive, or the awkward
           office printer.
         </h3>
