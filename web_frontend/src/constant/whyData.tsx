@@ -44,7 +44,7 @@ export const whyData = [
     highlight: "Print first",
     highlightSub: "collect when you want",
     description:
-      "Send your documents online and collect the printed copies from your selected RUET hall when they are ready.",
+      "Send your documents online and collect the printed copies from your selected RUET hall when you free.",
     icon: <FlexibleTimeIcon className="w-5 h-5" />,
   },
 ];

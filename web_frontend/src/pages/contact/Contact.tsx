@@ -19,11 +19,11 @@ const ContactUs = () => {
         </h3>
       </div>
 
-      <div className="font-roboto flex flex-wrap items-center justify-center gap-10 max-sm:gap-20 mt-20">
+      <div className="font-roboto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 sm:px-10 md:px-20 xl:px-30 pt-20">
         {contactData.map((item: ContactItem) => (
           <div
             key={item.id}
-            className="flex flex-col gap-7 p-10 sm:px-15 lg:px-20 md:py-15 rounded-xl bg-white max-w-md shadow-xl"
+            className="flex flex-col gap-7 sm:px-6 md:p-8 xl:px-10 py-10 md:py-15 rounded-xl bg-white max-w-sm shadow-xl"
           >
             <div className="flex items-center justify-center">
               <item.icon

@@ -30,7 +30,7 @@ export const contactData: ContactItem[] = [
     title: "Whatsapp Support",
     description: (
       <>
-        Available 24/7 <br />
+        Available Sat - Fri <br />
         except during class hours
       </>
     ),
