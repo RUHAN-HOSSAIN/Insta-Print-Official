@@ -4,7 +4,7 @@ import FAQ from "./faq/FAQ";
 import Body from "./home/Body";
 import Learn from "./learn/Learn";
 import Pricing from "./pricing/Pricing";
-import AboutUs from "./contact/AboutUs";
+import AboutUs from "./home/WhyInstaPrint";
 
 const Home = () => {
   const sectionOffsetStyle = {

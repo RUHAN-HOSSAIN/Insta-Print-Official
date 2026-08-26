@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { handleHeaderNavClick } from "../../components/utils/headerScroll";
-import { faqData } from "../../constant/faq";
+import { faqData } from "../../constant/faqData";
 import { ArrowDownIcon } from "../../assets/icons/Icons";
 
 const FAQ = () => {
