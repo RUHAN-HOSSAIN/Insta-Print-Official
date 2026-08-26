@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import { useState } from "react";
 import emailjs from "@emailjs/browser";
 
@@ -37,7 +38,12 @@ const Footer = () => {
     event.preventDefault();
 
     if (!feedback.trim()) {
-      alert("Please write your feedback first.");
+      Swal.fire({
+        icon: "warning",
+        title: "Wait a minute!",
+        text: "Please write your feedback first.",
+        confirmButtonColor: "#2563eb",
+      });
       return;
     }
 
@@ -56,11 +62,28 @@ const Footer = () => {
         },
       );
 
-      alert("Thank you! Your feedback has been sent.");
       setFeedback("");
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success",
+        title: "Feedback sent successfully!",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
     } catch (error) {
-      console.error("Feedback sending failed:", error);
-      alert("Failed to send feedback. Please try again.");
+      console.error(error);
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Something went wrong!",
+        text: "Your feedback could not be sent. Please try again.",
+        confirmButtonColor: "#2563eb",
+      });
     } finally {
       setSending(false);
     }
