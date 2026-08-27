@@ -3,7 +3,7 @@ import WhyCard from "../../components/home/WhyCard";
 
 const WhyInstraPrint = () => {
   return (
-    <div className="relative px-7 min-[500px]:px-10 md:px-15 py-15 sm:py-20 md:py-25 lg:py-30 bg-linear-to-t from-[#26065D] to-[#4B00FE] overflow-hidden">
+    <div className="relative px-7 min-[500px]:px-10 md:px-15 py-15 sm:py-20 md:py-25 lg:py-30 bg-linear-to-t from-[#26065D] to-[#4B00FE] overflow-hidden shadow-[0px_0px_20px_rgba(0,0,0,0.2)]">
       {/* ── Dot pattern background ── */}
       <div
         className="absolute inset-0 z-0 opacity-5 pointer-events-none"

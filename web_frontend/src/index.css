@@ -4,8 +4,10 @@
 
 /* @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *)); */
 
-html {
-  overflow-x: hidden;
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 @theme {

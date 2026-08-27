@@ -2,7 +2,7 @@ import { learnData, type LearnItem } from "../../constant/learnData";
 
 const Learn = () => {
   return (
-    <div className="relative px-7 min-[500px]:px-15 md:px-20 xl:px-40 py-20 md:py-25 lg:py-30  bg-linear-to-t from-[#26065E] to-[#4801ED]">
+    <div className="relative px-7 min-[500px]:px-15 md:px-20 xl:px-40 py-20 md:py-25 lg:py-30  bg-linear-to-t from-[#26065E] to-[#4801ED] shadow-[0px_0px_20px_rgba(0,0,0,0.2)]">
       {/* ── Dot pattern background ── */}
       <div
         className="absolute inset-0 z-0 opacity-20 pointer-events-none" // ← pointer-events-none add করো
