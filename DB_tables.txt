@@ -1,0 +1,52 @@
+Table-01: epson_tokens (id, hall_id, access_token, refresh_token, updated_at)
+
+Table-02: print_jobs (Main table)
+1. Si_No = (auto gen, koto number print eita: 1,2,3,4,.....) or, id = (printing er id),, [eita otota important na!! karon id er maddome khuje ber kora tought er cheye txn_id rr kon number theke pay hoiceh ta diye ber data khuje ber kora sohoj hobey, tai SI number dewyai better ig]
+2. hall_id (text)= কোন hall এর printer (from frontend)
+3. txn_id	(text)=	payment reference (from table-3 payments)
+4. amount_paid (numeric) = koto taka pay korce user  (from frontend)
+5. sender_number (text)= (jj number theke send mone kora hoiceh),,, [txn_id, amount_paid, r sender_number er data table-3 thekei pawya jabey..]  (from table-3 payments)
+6. amount_calculated	(numeric)=	frontend calculated price  (from frontend)
+7. files (jsonb, array er moto)=	[{name, pages, copies, color, subtotal}]  (from frontend)
+8. total_files (int)= koita files print korce  (files.size())
+9. total_page_print (int)= koto gula page total print korce
+10. status (text)=	success/failed/insufficient_payment
+11. created_at (timestamptz)=	কখন request আসলো
+12. comments (Text): keo jodi extra taka diye fele, ta lekha thakbe, kom dile ta lekha thakbe, exact dile no-comment
+
+
+Table-03: payments
+1. Si_No = (auto gen, koto number print eita: 1,2,3,4,.....)
+2. id	(uuid) (PK)=	unique identifier
+3. txn_id	(text)=	bKash/Nagad txn id
+4. sender_number	(text)=	কে পাঠিয়েছে
+5. amount	(numeric)=	কত টাকা
+6. status	(text)=	not_used / used
+7. use_for: (direct Print / Top-up)
+7. print_job_id	(uuid) (FK)=	কোন print job এ use হয়েছে
+8. created_at	(timestamptz)=	কখন payment আসলো
+
+Table-04: user_data
+1. Si_No = (auto gen, koto number print eita: 1,2,3,4,.....)
+2. roll (Int/numeric): (e.g: 2303130, this is also an username)
+3. ruet_stdn_mail (text): (e.g: 2303130@student.ruet.ac.bd, *@student.ruet.ac.bd,, last part sobar same,, this is also another username)
+4. password (text): (min 6 digit password, 1 alphabet, 1 digit must)
+5. top_up_balance (float number): (user er account aa taka joma rakhar system. ei top_up_balance use koreo print kora jabey) 
+7. preferreable_hall_id (text): (hallID, hall gular modde konta theke default print korai nite chai!!)
+8. gender (Text): (male / female)
+9. account_creted_date (timestamptz): (fix, jedin sign-up korbe)
+10. updated_at (timestamptz): (forget password korle, last password reset korce jedin)
+[
+  create table user_data (
+    si_no serial,
+    roll bigint primary key,
+    name text not null,
+    ruet_stdn_mail text unique not null,
+    password text not null, 
+    wallet_balance numeric(4, 2) default 0,
+    preferred_hall_id text,
+    gender text check (gender in ('male', 'female')) not null,
+    account_created_date timestamptz default now(),
+    updated_at timestamptz default now()
+  );
+]

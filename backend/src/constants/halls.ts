@@ -1,7 +1,7 @@
 export const HALLS = [
   {
     id: "male_hall_02",
-    name: "Shaheed Hadi Hall (Male Hall 02)",
+    name: "Male Hall 02 (Shaheed Hadi Hall)",
     printerRow: 1, // Supabase epson_tokens table এ কোন row
     active: true,  // এখন শুধু এটাই active
   },

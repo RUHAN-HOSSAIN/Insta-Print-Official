@@ -48,39 +48,3 @@ export async function submitPrintJob(
   });
 }
 
-
-// import { Request, Response } from "express";
-// import { addToQueue } from "../services/queue.service";
-// import { validateTransactionId } from "../services/payment.service";
-
-// export async function submitPrintJob(
-//   req: Request,
-//   res: Response
-// ): Promise<void> {
-//   const { txnId, copies, color } = req.body;
-//   const file = req.file;
-
-//   // ফাইল আছে কিনা চেক
-//   if (!file) {
-//     res.status(400).json({ error: "File required" });
-//     return;
-//   }
-
-//   // Transaction ID valid কিনা চেক
-//   if (!validateTransactionId(txnId)) {
-//     res.status(400).json({ error: "Invalid transaction ID" });
-//     return;
-//   }
-
-//   // Job বানাও এবং queue তে দাও
-//   const jobId = `job_${Date.now()}`;
-//   addToQueue({
-//     jobId,
-//     fileBuffer: file.buffer,
-//     fileName: file.originalname,
-//     settings: { copies: Number(copies), color },
-//   });
-
-//   // User কে সাথে সাথে response দাও, বাকি কাজ background এ চলবে
-//   res.status(202).json({ jobId, status: "queued" });
-// }

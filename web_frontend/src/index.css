@@ -1,4 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Jura:wght@300..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300..700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Finger+Paint&family=Jura:wght@300..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik+Wet+Paint&family=Space+Grotesk:wght@300..700&display=swap');
+
+@keyframes auth-card-in {
+  from { opacity: 0; transform: translateX(32px); }
+  to { opacity: 1; transform: translateX(0); }
+}
 
 @import "tailwindcss";
 
@@ -27,6 +32,9 @@
   --font-roboto: "Roboto", sans-serif;
   --font-jura: "Jura", sans-serif;
   --font-spaceG: "Space Grotesk", sans-serif;
+  --font-rubikWP: "Rubik Wet Paint", system-ui, sans-serif;
+  --font-fingerPaint: "Finger Paint", sans-serif;
+  --font-blackOpsOne: "Black Ops One", system-ui;
 
   /* --breakpoint-customBreak-1: 1160px;
   --breakpoint-navCustomBreak-1: 1361px;

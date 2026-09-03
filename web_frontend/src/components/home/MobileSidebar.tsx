@@ -1,15 +1,18 @@
-
 import { Link } from "react-router-dom";
 
 import { navData } from "../../constant/navData";
 import { legal } from "../../constant/footerData";
 import { handleHeaderNavClick } from "../utils/headerScroll";
+import type { User } from "../../context/AuthContext";
 
 type MobileSidebarProps = {
   isOpen: boolean;
   activeNavTo: string;
   pathname: string;
   onClose: () => void;
+  onOpenAuth: (step: "login" | "signup") => void;
+  user: User | null;
+  onLogout: () => void;
 };
 
 const MobileSidebar = ({
@@ -17,6 +20,9 @@ const MobileSidebar = ({
   activeNavTo,
   pathname,
   onClose,
+  onOpenAuth,
+  user,
+  onLogout,
 }: MobileSidebarProps) => {
   return (
     <>
@@ -46,7 +52,10 @@ const MobileSidebar = ({
         <nav className="px-6 pt-4 pb-8 flex flex-col">
           <ul className="flex flex-col">
             {navData.map((item, index) => (
-              <li key={index} className="border-b border-gray-100 last:border-b-0">
+              <li
+                key={index}
+                className="border-b border-gray-100 last:border-b-0"
+              >
                 <Link
                   to={item.to}
                   onClick={(event) =>
@@ -69,20 +78,15 @@ const MobileSidebar = ({
             ))}
           </ul>
 
-          <Link
-            to="/"
-            onClick={(event) =>
-              handleHeaderNavClick({
-                event,
-                to: "/",
-                pathname,
-                closeMenu: onClose,
-              })
-            }
-            className="mt-6 text-center bg-blue-700 hover:bg-blue-800 text-white px-4 py-3 shadow-md rounded-md transition-all cursor-pointer"
-          >
-            Try Now
-          </Link>
+          {user ? (
+            <div className="mt-6 flex flex-col gap-3">
+              <Link to="/dashboard" onClick={onClose} className="text-center font-semibold text-green-700">Wallet: ৳ {user.wallet_balance.toFixed(2)}</Link>
+              <Link to="/dashboard/profile" onClick={onClose} className="rounded-md bg-blue-700 px-4 py-3 text-center text-white">Profile</Link>
+              <button type="button" onClick={() => { onLogout(); onClose(); }} className="text-slate-600">Log out</button>
+            </div>
+          ) : (
+            <button type="button" onClick={() => { onClose(); onOpenAuth("login"); }} className="mt-6 w-full rounded-md bg-blue-700 px-4 py-3 text-center text-white transition-all hover:bg-blue-800">Sign In</button>
+          )}
 
           <div className="flex text-xs flex-wrap gap-4 mt-6 text-gray-600">
             {legal.map((item, index) => (

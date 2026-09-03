@@ -3,20 +3,21 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { navData } from "../constant/navData";
-import {
-  handleHeaderNavClick,
-  useHeaderHeightCssVar,
-} from "./utils/headerScroll";
+import { handleHeaderNavClick, useHeaderHeightCssVar } from "./utils/headerScroll";
 import MobileSidebar from "./home/MobileSidebar.tsx";
 
 import Logo from "../assets/Logo3.webp";
 import { HamburgerIcon, CloseIcon } from "../assets/icons/Icons.tsx";
+import AuthModal from "./auth/AuthModal";
+import { useAuth } from "../context/useAuth";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [authModal, setAuthModal] = useState<"login" | "signup" | null>(null);
   const [activeNavTo, setActiveNavTo] = useState("/");
   const location = useLocation();
   const headerRef = useHeaderHeightCssVar();
+  const { user, logout } = useAuth();
 
   const navSections = useMemo(
     () => [
@@ -28,6 +29,9 @@ const Header = () => {
     [],
   );
   const displayActiveNavTo = location.pathname === "/" ? activeNavTo : "";
+
+  const requestedAuth = (location.state as { openAuth?: "login" | "signup" } | null)?.openAuth;
+  const activeAuthModal = authModal ?? requestedAuth;
 
   useEffect(() => {
     if (location.pathname !== "/") {
@@ -134,20 +138,20 @@ const Header = () => {
             </Link>
           ))}
 
-          <Link
-            to="/"
-            onClick={(event) =>
-              handleHeaderNavClick({
-                event,
-                to: "/",
-                pathname: location.pathname,
-                closeMenu,
-              })
-            }
-            className="max-lg:hidden bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 shadow-md rounded-md hover:scale-105 transition-all cursor-pointer shrink-0"
-          >
-            Try Now
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-3 text-sm">
+              <Link to="/dashboard" className="font-semibold text-green-700 hover:underline">৳ {user.wallet_balance.toFixed(2)}</Link>
+              <Link to="/dashboard/profile" className="rounded-md bg-blue-700 px-4 py-2 text-white hover:bg-blue-800">Profile</Link>
+              <button type="button" onClick={logout} className="text-slate-600 hover:text-red-600">Log out</button>
+            </div>
+          ) : (
+            <button 
+              type="button" 
+              onClick={() => setAuthModal("login")} 
+              className="z-50 shrink-0 max-lg:hidden rounded-md bg-blue-700 px-4 py-2 text-white shadow-md transition-all hover:scale-105 hover:bg-blue-800">
+              Sign In
+            </button>
+          )}
         </div>
 
         <div className="sm:hidden flex-1 flex items-center justify-end cursor-pointer">
@@ -170,7 +174,11 @@ const Header = () => {
         activeNavTo={displayActiveNavTo}
         pathname={location.pathname}
         onClose={closeMenu}
+        onOpenAuth={(step) => setAuthModal(step)}
+        user={user}
+        onLogout={logout}
       />
+      {activeAuthModal && <AuthModal initialStep={activeAuthModal} onClose={() => setAuthModal(null)} />}
     </>
   );
 };

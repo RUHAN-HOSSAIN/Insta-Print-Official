@@ -42,7 +42,7 @@ const FileUploadBox = ({
       onDrop={onDrop}
     >
       {/* Floating PDF card */}
-      <div className="float-page absolute -top-9 right-5 w-20 h-26 bg-white rounded-lg shadow-md p-3 flex flex-col gap-2 border border-gray-300">
+      <div className="float-page absolute -top-12 -right-6 lg:right-5 lg:w-20 lg:h-26 bg-white rounded-lg shadow-md p-3 flex flex-col gap-2 border border-gray-300">
         <div className="w-1/2 h-1.5 rounded bg-purple-500" />
         <div className="w-full h-1 rounded bg-blue-300" />
         <div className="w-4/5 h-1 rounded bg-yellow-300" />
@@ -53,25 +53,25 @@ const FileUploadBox = ({
       </div>
 
       {/* Main text */}
-      <p className="font-spaceG text-[22px] font-bold text-gray-900 mt-4 text-center text-shadow-sm">
+      <p className="font-spaceG text-lg md:text-[22px] font-bold text-gray-900 mt-4 text-center text-shadow-sm">
         Drag &amp; drop your File here
       </p>
 
       {/* Button */}
       <button
         type="button"
-        className="flex items-center gap-2 px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-700 hover:scale-102 hover:transition-transform active:scale-95 transition-all text-white font-medium shadow-[0px_4px_6px_rgba(0,0,0,0.3)]"
+        className="flex items-center gap-2 px-8 py-3 rounded-full bg-blue-600 hover:bg-blue-700 hover:scale-102 hover:transition-transform active:scale-95 transition-all text-white shadow-[0px_4px_6px_rgba(0,0,0,0.3)]"
         onClick={(e) => {
           e.stopPropagation(); // avoid double trigger from parent div
           handleClick();
         }}
       >
         <UploadIcon className="w-6 h-6 text-shadow-lg" />
-        or click to choose a file
+        <p className="text-sm md:text-base font-medium">or click to choose a file</p>
       </button>
 
       {/* Subtext */}
-      <p className="text-sm text-gray-400 font-light italic">(Keep 15 MB max file size)</p>
+      <p className="text-xs md:text-sm text-gray-500 font-light italic">(Keep 15 MB max file size)</p>
 
       {/* Hidden input */}
       <input
