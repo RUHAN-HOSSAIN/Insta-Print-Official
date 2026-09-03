@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 
 const collectionPoints = [
   { id: "male_hall_02", name: "Shaheed Hadi Hall", active: true },
-  { id: "haque_hall", name: "Sher-e-Bangla Fazlul Haque Hall", active: false },
-  { id: "shahidul_hall", name: "Shaheed Shahidul Islam Hall", active: false },
-  { id: "male_hall_01", name: "Male Hall 01", active: false },
-  { id: "ziaur_hall", name: "Shaheed President Ziaur Rahman Hall", active: false },
-  { id: "selim_hall", name: "Shaheed LT. Selim Hall", active: false },
+  { id: "N/A", name: "Comming soon...", active: false },
+  // { id: "haque_hall", name: "Sher-e-Bangla Fazlul Haque Hall", active: false },
+  // { id: "shahidul_hall", name: "Shaheed Shahidul Islam Hall", active: false },
+  // { id: "male_hall_01", name: "Male Hall 01", active: false },
+  // { id: "ziaur_hall", name: "Shaheed President Ziaur Rahman Hall", active: false },
+  // { id: "selim_hall", name: "Shaheed LT. Selim Hall", active: false },
 ];
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
@@ -98,7 +99,9 @@ const PrinterStatus = ({ onSelectionChange, hasError = false }: PrinterStatusPro
           className={`w-full text-sm sm:text-base  appearance-none rounded-lg border bg-slate-50 px-4 py-2 font-normal text-slate-800 outline-none transition focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-100 ${hasError ? "border-red-500 ring-2 ring-red-100" : "border-slate-300"}`}
           aria-label="Select collection hall"
         >
-          <option value="">Choose a collection point</option>
+          <option value="" disabled>
+            Choose a collection point
+          </option>
           {collectionPoints.map((point) => (
             <option key={point.id} value={point.id} disabled={!point.active}>
               {point.name}{point.active ? "" : " (Coming soon)"}

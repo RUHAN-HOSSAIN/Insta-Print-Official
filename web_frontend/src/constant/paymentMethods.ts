@@ -14,7 +14,7 @@ export const paymentMethods: PaymentMethod[] = [
   },
   {
     medium: "Nagad",
-    number: "01XXXXXXXXX",
+    number: "01XXXXXXX",
     status: "unavailable",
   },
 ];

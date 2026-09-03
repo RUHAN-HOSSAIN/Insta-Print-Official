@@ -10,7 +10,7 @@ import type { PrintFile } from "../../types/PrintRequest";
 import { buildPrintFormData } from "../../utils/buildPrintFormData";
 import { usePrintFiles } from "../../hooks/usePrintFiles";
 
-import mainLogo from "../../assets/logo_main.svg"
+import mainLogo from "../../assets/logo_main.webp";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
@@ -21,7 +21,6 @@ const Body = () => {
   const [coverLetterEnabled, setCoverLetterEnabled] = useState(false);
   const [coverLetterName, setCoverLetterName] = useState("");
   const [coverLetterRoll, setCoverLetterRoll] = useState("");
-  const [coverLetterMessage, setCoverLetterMessage] = useState("");
   const [generatedCoverLetter, setGeneratedCoverLetter] = useState<File | null>(
     null,
   );
@@ -32,6 +31,23 @@ const Body = () => {
   const [formError, setFormError] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
   const [printerKey, setPrinterKey] = useState(0);
+
+  const clearGeneratedCoverLetter = () => {
+    if (!generatedCoverLetter) return;
+    const index = printFiles.files.indexOf(generatedCoverLetter);
+    if (index >= 0) printFiles.removeFile(index);
+    setGeneratedCoverLetter(null);
+  };
+
+  const handleCoverLetterNameChange = (name: string) => {
+    clearGeneratedCoverLetter();
+    setCoverLetterName(name);
+  };
+
+  const handleCoverLetterRollChange = (roll: string) => {
+    clearGeneratedCoverLetter();
+    setCoverLetterRoll(roll.replace(/\D/g, "").slice(0, 7));
+  };
 
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
@@ -48,7 +64,6 @@ const Body = () => {
     setCoverLetterEnabled(false);
     setCoverLetterName("");
     setCoverLetterRoll("");
-    setCoverLetterMessage("");
     setGeneratedCoverLetter(null);
     setHallId("");
     setPrinterOnline(false);
@@ -64,7 +79,6 @@ const Body = () => {
       const index = printFiles.files.indexOf(generatedCoverLetter);
       if (index >= 0) printFiles.removeFile(index);
       setGeneratedCoverLetter(null);
-      setCoverLetterMessage("");
     }
   };
 
@@ -160,7 +174,7 @@ const Body = () => {
   return (
     <>
       <div style={{ height: "var(--header-height, 72px)" }} />
-      <div className="relative p-7 sm:py-15 md:pb-20 min-[500px]:px-10 sm:px-13 md:px-16 lg:px-20">
+      <div className="relative px-7 pt-15 pb-20 min-[500px]:px-10 sm:px-13 md:px-16 lg:px-20">
         <div
           className="pointer-events-none absolute inset-0 -z-5 opacity-100"
           style={{
@@ -173,7 +187,7 @@ const Body = () => {
         />
 
         <div className="flex flex-col items-center justify-center gap-5 mb-10">
-          <div className="flex items-center gap-3 mb-2 md:mb-5">
+          <div className="flex items-center gap-1 sm:gap-3 mb-2 md:mb-5">
             <img src={mainLogo} alt="Main Logo" className="w-15 h-15 md:h-24 md:w-24" />
             <div className=" font-rubikWP">
               <span className="text-2xl lg:text-3xl text-gray-700">
@@ -193,7 +207,7 @@ const Body = () => {
           </h4>
         </div>
 
-        <div className={`relative grid grid-cols-1 gap-10 md:gap-15 lg:gap-20 xl:gap-25 ${printFiles.files.length > 0 ? "md:grid-cols-2" : ""}`}>
+        <div className={`relative grid grid-cols-1 gap-10 md:gap-7 lg:gap-20 xl:gap-25 ${printFiles.files.length > 0 ? "md:grid-cols-2" : ""}`}>
           <div className={`flex h-fit flex-col gap-6 rounded-lg  px-7 pt-15 pb-9 shadow-[0px_0px_10px_rgba(0,0,0,0.2)] lg:p-10 bg-white ${printFiles.files.length === 0 ? "w-full md:mx-auto max-w-xl" : ""}`}>
             <FileUploadBox
               onFilesSelected={printFiles.addFiles}
@@ -230,7 +244,6 @@ const Body = () => {
             formError={formError}
             submitMessage={submitMessage}
             isBusy={isBusy}
-            generatedCoverLetter={generatedCoverLetter}
             onTransactionChange={setTransactionId}
             onClear={handleClear}
             onPrint={() => void handlePrint()}
@@ -242,9 +255,8 @@ const Body = () => {
                 <CoverLetterDetails
                   name={coverLetterName}
                   roll={coverLetterRoll}
-                  message={coverLetterMessage}
-                  onNameChange={setCoverLetterName}
-                  onRollChange={(value) => setCoverLetterRoll(value.replace(/\D/g, "").slice(0, 7))}
+                  onNameChange={handleCoverLetterNameChange}
+                  onRollChange={handleCoverLetterRollChange}
                 />
               ) : null
             }
