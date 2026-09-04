@@ -21,7 +21,7 @@ export const whyData = [
     highlightSub: "deleted after printing",
     description:
       "Your documents are not kept after printing. We remove your files once your print job is completed.",
-    icon: <ShieldIcon className="w-5 h-5" />,
+    icon: <ShieldIcon className="w-6 h-6" />,
     link: (
       <Link
         to="/privacy-policy"
