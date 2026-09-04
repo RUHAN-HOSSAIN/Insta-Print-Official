@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 import { navData } from "../../constant/navData";
 import { legal } from "../../constant/footerData";
-import { handleHeaderNavClick } from "../utils/headerScroll";
+import { handleHeaderNavClick } from "../../utils/headerScroll";
 import type { User } from "../../context/AuthContext";
 
 type MobileSidebarProps = {

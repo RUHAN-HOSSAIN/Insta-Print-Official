@@ -38,8 +38,8 @@ const Toggle = ({
   </button>
 );
 
-const PER_PAGE_BW = Number(pricingData[0].price.slice(0, -3)); // Remove " Tk" and convert to number
-const PER_PAGE_COLOR = Number(pricingData[1].price.slice(0, -3)); // Remove " Tk" and convert to number
+const PER_PAGE_BW = pricingData[0].price;
+const PER_PAGE_COLOR = pricingData[1].price;
 
 
 const SelectedFileCard = ({ file, index, onRemove, onTotalChange, onDetailsChange, isCoverLetter = false }: Props) => {

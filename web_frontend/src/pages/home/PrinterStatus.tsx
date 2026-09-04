@@ -1,14 +1,10 @@
 
 import { useEffect, useState } from "react";
+import { HALLS } from "../../constant/halls";
 
 const collectionPoints = [
-  { id: "male_hall_02", name: "Shaheed Hadi Hall", active: true },
-  { id: "N/A", name: "Comming soon...", active: false },
-  // { id: "haque_hall", name: "Sher-e-Bangla Fazlul Haque Hall", active: false },
-  // { id: "shahidul_hall", name: "Shaheed Shahidul Islam Hall", active: false },
-  // { id: "male_hall_01", name: "Male Hall 01", active: false },
-  // { id: "ziaur_hall", name: "Shaheed President Ziaur Rahman Hall", active: false },
-  // { id: "selim_hall", name: "Shaheed LT. Selim Hall", active: false },
+  ...HALLS,
+  { id: "N/A", name: "Coming soon...", active: false },
 ];
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";

@@ -1,5 +1,5 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import logoUrl from "./logo_main_grayscale.png";
+import logoUrl from "./logo_main_grayscale.webp";
 
 const PAGE_WIDTH = 595.28;
 const PAGE_HEIGHT = 841.89;

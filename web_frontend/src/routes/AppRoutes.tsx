@@ -2,8 +2,8 @@ import { Navigate, Routes, Route, Outlet, useLocation } from "react-router-dom";
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import ScrollToTop from "../components/utils/ScrollToTop";
-import { useRootRouteSmoothScroll } from "../components/utils/headerScroll";
+import ScrollToTop from "../utils/ScrollToTop";
+import { useRootRouteSmoothScroll } from "../utils/headerScroll";
 
 import Home from "../pages/Home";
 import PaymentProcess from "../pages/pricing/PaymentProcess";

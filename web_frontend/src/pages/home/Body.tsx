@@ -1,19 +1,17 @@
 import { useState } from "react";
+import { submitPrintJob } from "../../api/printApi";
+
 import FileUploadBox from "../../components/print/FileUploadBox";
 import SelectedFileCard from "../../components/print/SelectedFileCard";
 import PaymentMethodsPanel from "../../components/print/PaymentMethodsPanel";
-import { CoverLetterDetails, CoverLetterToggle } from "../../components/print/CoverLetterFields";
+import { CoverLetterDetails, CoverLetterToggle, } from "../../components/print/CoverLetterFields";
 import PrintSummary from "../../components/print/PrintSummary";
 import PrinterStatus from "./PrinterStatus";
 import { createCoverLetterPdf } from "../../utils/createCoverLetterPdf";
 import type { PrintFile } from "../../types/PrintRequest";
-import { buildPrintFormData } from "../../utils/buildPrintFormData";
 import { usePrintFiles } from "../../hooks/usePrintFiles";
 
 import mainLogo from "../../assets/logo_main.webp";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 const Body = () => {
   const printFiles = usePrintFiles();
@@ -131,7 +129,8 @@ const Body = () => {
         (sum, item) => sum + item.pages * item.copies,
         0,
       );
-      const formData = buildPrintFormData(
+
+      const result = await submitPrintJob(
         {
           hall_id: hallId,
           txn_id: transactionId.trim(),
@@ -143,15 +142,6 @@ const Body = () => {
         },
         files,
       );
-      const response = await fetch(`${API_BASE_URL}/print`, {
-        method: "POST",
-        body: formData,
-      });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok)
-        throw new Error(
-          result.error ?? `Print request failed (${response.status}).`,
-        );
       setSubmitMessage(
         `Print request sent. ${result.totalFiles ?? files.length} file(s) queued.`,
       );
@@ -171,6 +161,7 @@ const Body = () => {
   const totalPrice =
     printFiles.totals.reduce((sum, total) => sum + total, 0) +
     (coverLetterEnabled && !generatedCoverLetter ? 1 : 0);
+
   return (
     <>
       <div style={{ height: "var(--header-height, 72px)" }} />
@@ -188,27 +179,32 @@ const Body = () => {
 
         <div className="flex flex-col items-center justify-center gap-5 mb-10">
           <div className="flex items-center gap-1 sm:gap-3 mb-2 md:mb-5">
-            <img src={mainLogo} alt="Main Logo" className="w-15 h-15 md:h-24 md:w-24" />
+            <img
+              src={mainLogo}
+              alt="Main Logo"
+              className="w-15 h-15 md:h-24 md:w-24"
+            />
             <div className=" font-rubikWP">
-              <span className="text-2xl lg:text-3xl text-gray-700">
-                In⚡ta
-              </span> 
+              <span className="text-2xl lg:text-3xl text-gray-700">In⚡ta</span>
               <br />
-              <span className=" text-[#294389] text-3xl lg:text-4xl">
-                rint
-              </span>
+              <span className=" text-[#294389] text-3xl lg:text-4xl">rint</span>
             </div>
           </div>
           <h1 className="font-fingerPaint text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-center">
             Quick and Easy Document Printing Near Me
           </h1>
           <h4 className="font-spaceG text-center text-xs sm:text-sm md:text-base lg:text-md xl:text-lg text-gray-700">
-            On-demand A4 printing with remote printing and seamless click-and-collect
+            On-demand A4 printing with remote printing and seamless
+            click-and-collect
           </h4>
         </div>
 
-        <div className={`relative grid grid-cols-1 gap-10 md:gap-7 lg:gap-20 xl:gap-25 ${printFiles.files.length > 0 ? "md:grid-cols-2" : ""}`}>
-          <div className={`flex h-fit flex-col gap-6 rounded-lg  px-7 pt-15 pb-9 shadow-[0px_0px_10px_rgba(0,0,0,0.2)] lg:p-10 bg-white ${printFiles.files.length === 0 ? "w-full md:mx-auto max-w-xl" : ""}`}>
+        <div
+          className={`relative grid grid-cols-1 gap-10 md:gap-7 lg:gap-20 xl:gap-25 ${printFiles.files.length > 0 ? "md:grid-cols-2" : ""}`}
+        >
+          <div
+            className={`flex h-fit flex-col gap-6 rounded-lg  px-7 pt-15 pb-9 shadow-[0px_0px_10px_rgba(0,0,0,0.2)] lg:p-10 bg-white ${printFiles.files.length === 0 ? "w-full md:mx-auto max-w-xl" : ""}`}
+          >
             <FileUploadBox
               onFilesSelected={printFiles.addFiles}
               isDragging={isDragging}
@@ -235,42 +231,47 @@ const Body = () => {
               </div>
             )}
           </div>
-          
-          {printFiles.files.length > 0 && <PrintSummary
-            totalPrice={totalPrice}
-            roundedTotalPrice={Math.floor(totalPrice)}
-            transactionId={transactionId}
-            transactionError={errorMentions("transaction")}
-            formError={formError}
-            submitMessage={submitMessage}
-            isBusy={isBusy}
-            onTransactionChange={setTransactionId}
-            onClear={handleClear}
-            onPrint={() => void handlePrint()}
-            coverLetterToggle={
-              <CoverLetterToggle enabled={coverLetterEnabled} onToggle={handleCoverToggle} />
-            }
-            coverLetterFields={
-              coverLetterEnabled ? (
-                <CoverLetterDetails
-                  name={coverLetterName}
-                  roll={coverLetterRoll}
-                  onNameChange={handleCoverLetterNameChange}
-                  onRollChange={handleCoverLetterRollChange}
+
+          {printFiles.files.length > 0 && (
+            <PrintSummary
+              totalPrice={totalPrice}
+              roundedTotalPrice={Math.floor(totalPrice)}
+              transactionId={transactionId}
+              transactionError={errorMentions("transaction")}
+              formError={formError}
+              submitMessage={submitMessage}
+              isBusy={isBusy}
+              onTransactionChange={setTransactionId}
+              onClear={handleClear}
+              onPrint={() => void handlePrint()}
+              coverLetterToggle={
+                <CoverLetterToggle
+                  enabled={coverLetterEnabled}
+                  onToggle={handleCoverToggle}
                 />
-              ) : null
-            }
-          >
-            <PrinterStatus
-              key={printerKey}
-              onSelectionChange={(id, online) => {
-                setHallId(id);
-                setPrinterOnline(online);
-              }}
-              hasError={errorMentions("hall")}
-            />
-            <PaymentMethodsPanel />
-          </PrintSummary>}
+              }
+              coverLetterFields={
+                coverLetterEnabled ? (
+                  <CoverLetterDetails
+                    name={coverLetterName}
+                    roll={coverLetterRoll}
+                    onNameChange={handleCoverLetterNameChange}
+                    onRollChange={handleCoverLetterRollChange}
+                  />
+                ) : null
+              }
+            >
+              <PrinterStatus
+                key={printerKey}
+                onSelectionChange={(id, online) => {
+                  setHallId(id);
+                  setPrinterOnline(online);
+                }}
+                hasError={errorMentions("hall")}
+              />
+              <PaymentMethodsPanel />
+            </PrintSummary>
+          )}
         </div>
       </div>
     </>

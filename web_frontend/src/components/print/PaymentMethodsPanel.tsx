@@ -35,7 +35,7 @@ const PaymentMethodsPanel = () => {
               <CopyIcon className="w-5 h-5 md:w-6 md:h-6" />
             </button>
             {method.status === "unavailable" ? (
-              <span className="text-xs text-gray-700">Currently unavailable</span>
+              <span className="text-xs text-gray-500">Unavailable</span>
             ) : copiedMedium === method.medium ? (
               <span className="text-xs text-green-600">Copied</span>
             ) : null}

@@ -3,10 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { navData } from "../constant/navData";
-import { handleHeaderNavClick, useHeaderHeightCssVar } from "./utils/headerScroll";
+import { handleHeaderNavClick, useHeaderHeightCssVar } from "../utils/headerScroll";
 import MobileSidebar from "./home/MobileSidebar.tsx";
 
-import Logo from "../assets/newLogo.webp";
+import Logo from "../assets/navLogo.webp";
 import { HamburgerIcon, CloseIcon } from "../assets/icons/Icons.tsx";
 import AuthModal from "./auth/AuthModal";
 import { useAuth } from "../context/useAuth";

@@ -3,10 +3,10 @@
 export const pricingData = [
   {
     mode: "Black & White",
-    price: "2 Tk",
+    price: 2,
   },
   {
     mode: "Color",
-    price: "2.5 Tk",
+    price: 2.5,
   },
 ];

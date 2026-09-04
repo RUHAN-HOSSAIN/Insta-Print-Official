@@ -2,31 +2,26 @@ import { useEffect, useRef } from "react";
 import type { MouseEvent } from "react";
 
 const scrollToHash = (hash: string) => {
-  if (!hash) {
-    return;
-  }
+  if (!hash) return;
 
-  const targetSection = document.querySelector(hash);
-  targetSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.querySelector(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
 const syncHeaderHeightVariable = (
   headerElement: HTMLElement | null,
   variableName = "--header-height",
 ) => {
-  if (!headerElement) {
-    return () => {};
-  }
+  if (!headerElement) return () => {};
 
   const rootElement = document.documentElement;
-
   const updateHeaderHeight = () => {
-    const headerHeight = headerElement.getBoundingClientRect().height;
-    rootElement.style.setProperty(variableName, `${headerHeight}px`);
+    rootElement.style.setProperty(
+      variableName,
+      `${headerElement.getBoundingClientRect().height}px`,
+    );
   };
 
   updateHeaderHeight();
-
   const resizeObserver = new ResizeObserver(updateHeaderHeight);
   resizeObserver.observe(headerElement);
   window.addEventListener("resize", updateHeaderHeight);
@@ -51,63 +46,41 @@ export const handleHeaderNavClick = ({
   closeMenu,
 }: HandleHeaderNavClickParams) => {
   closeMenu?.();
-
-  if (!to.startsWith("/")) {
-    return;
-  }
+  if (!to.startsWith("/")) return;
 
   const [targetPath, targetHashValue] = to.split("#");
   const normalizedPath = targetPath || "/";
   const targetHash = targetHashValue ? `#${targetHashValue}` : "";
-
-  if (normalizedPath !== "/") {
-    return;
-  }
-
-  // On same page, force smooth behavior for "/" and "/#section" clicks.
-  if (pathname !== "/") {
-    return;
-  }
+  if (normalizedPath !== "/" || pathname !== "/") return;
 
   event.preventDefault();
-
-  if (!targetHash) {
-    window.history.replaceState(null, "", "/");
+  window.history.replaceState(null, "", targetHash ? to : "/");
+  if (targetHash) {
+    scrollToHash(targetHash);
+  } else {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
   }
-
-  window.history.replaceState(null, "", to);
-  scrollToHash(targetHash);
 };
 
 export const useRootRouteSmoothScroll = (pathname: string, hash: string) => {
   useEffect(() => {
-    if (pathname !== "/") {
-      return;
-    }
+    if (pathname !== "/") return;
 
     const runScroll = () => {
       if (hash) {
         scrollToHash(hash);
-        return;
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(runScroll);
-    });
+    window.requestAnimationFrame(() => window.requestAnimationFrame(runScroll));
   }, [pathname, hash]);
 };
 
 export const useHeaderHeightCssVar = () => {
   const headerRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    return syncHeaderHeightVariable(headerRef.current);
-  }, []);
-
+  useEffect(() => syncHeaderHeightVariable(headerRef.current), []);
   return headerRef;
 };

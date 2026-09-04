@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowUpIcon } from "../../assets/icons/Icons";
+import { ArrowUpIcon } from "../assets/icons/Icons";
 
 const ScrollToTop = () => {
   const [isPastHalfOfHome, setIsPastHalfOfHome] = useState(false);
@@ -16,30 +16,20 @@ const ScrollToTop = () => {
 
   const startHideTimer = useCallback(() => {
     clearHideTimer();
-    hideTimerRef.current = window.setTimeout(() => {
-      setIsTemporarilyVisible(false);
-    }, 1500);
+    hideTimerRef.current = window.setTimeout(() => setIsTemporarilyVisible(false), 1500);
   }, [clearHideTimer]);
 
   useEffect(() => {
     const handleScroll = () => {
       const homeSection = document.getElementById("home");
-      if (!homeSection) {
-        return;
-      }
+      if (!homeSection) return;
 
-      const sectionTop = homeSection.offsetTop;
-      const triggerPoint = sectionTop + homeSection.offsetHeight / 2;
-      const scrolledPastHalf = window.scrollY >= triggerPoint;
-
+      const scrolledPastHalf =
+        window.scrollY >= homeSection.offsetTop + homeSection.offsetHeight / 2;
       setIsPastHalfOfHome(scrolledPastHalf);
-
       if (scrolledPastHalf) {
         setIsTemporarilyVisible(true);
-
-        if (!isHovering) {
-          startHideTimer();
-        }
+        if (!isHovering) startHideTimer();
       } else {
         setIsTemporarilyVisible(false);
         clearHideTimer();
@@ -48,7 +38,6 @@ const ScrollToTop = () => {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
-
     return () => {
       clearHideTimer();
       window.removeEventListener("scroll", handleScroll);
@@ -71,9 +60,7 @@ const ScrollToTop = () => {
         startHideTimer();
       }}
       aria-label="Scroll to top"
-      className={`fixed bottom-7 right-7 bg-white p-2 border border-slate-200 rounded-full shadow-xl cursor-pointer z-50 transition-all duration-300 hover:scale-110 ${
-        shouldShowButton ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-      }`}
+      className={`fixed bottom-7 right-7 z-50 cursor-pointer rounded-full border border-slate-200 bg-white p-2 shadow-xl transition-all duration-300 hover:scale-110 ${shouldShowButton ? "opacity-100 pointer-events-auto" : "pointer-events-none opacity-0"}`}
     >
       <ArrowUpIcon className="text-blue-500" />
     </button>

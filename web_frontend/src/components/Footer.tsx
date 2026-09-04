@@ -7,7 +7,7 @@ import { useLocation } from "react-router-dom";
 
 import { company, legal, socialMedia } from "../constant/footerData";
 import { FacebookIcon, WhatsappIcon } from "../assets/icons/Icons.tsx";
-import { handleHeaderNavClick } from "./utils/headerScroll";
+import { handleHeaderNavClick } from "../utils/headerScroll.ts";
 
 const SvgPattern = ({ color = "white" }: { color?: string }) => (
   <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-7">
