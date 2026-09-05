@@ -14,7 +14,12 @@
 	"observability": {
 		"enabled": true
 	},
-	"upload_source_maps": true
+	"upload_source_maps": true,
+	"vars": {
+    "FRONTEND_URL": "https://instaprint-live.me",
+    "SUPABASE_URL": "https://bjbepojouugdmoflesgf.supabase.co",
+    "EPSON_CLIENT_ID": "ee37370d1ce74dc58de9bc1f8ebad663"
+  }
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

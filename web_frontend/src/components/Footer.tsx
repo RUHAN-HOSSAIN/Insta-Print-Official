@@ -184,7 +184,8 @@ const Footer = () => {
           )}
         </div>
         <div className="text-center">
-          Insta Print © {new Date().getFullYear()}. Created with 🖤 by Ruhan.
+          {/* Insta Print © {new Date().getFullYear()}. Created with 🖤 by Ruhan. */}
+          Insta Print © {new Date().getFullYear()}. All rights reserved.
         </div>
       </div>
     </>
