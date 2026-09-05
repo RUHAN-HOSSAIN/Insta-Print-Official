@@ -180,7 +180,7 @@ const Body = () => {
   return (
     <>
       <div style={{ height: "var(--header-height, 72px)" }} />
-      <div className="relative px-7 pt-15 pb-20 min-[500px]:px-10 sm:px-13 md:px-16 lg:px-20">
+      <div className="relative px-7 pt-15 pb-20 min-[500px]:px-10 sm:px-13 md:px-16 lg:px-20 xl:px-25 2xl:px-30">
         <div
           className="pointer-events-none absolute inset-0 -z-5 opacity-100"
           style={{
@@ -215,7 +215,7 @@ const Body = () => {
         </div>
 
         <div
-          className={`relative grid grid-cols-1 gap-10 md:gap-7 lg:gap-20 xl:gap-25 ${printFiles.files.length > 0 ? "md:grid-cols-2" : ""}`}
+          className={`relative grid grid-cols-1 gap-10 md:gap-7 lg:gap-15 xl:gap-20 ${printFiles.files.length > 0 ? "md:grid-cols-2 pt-10" : "pt-5"}`}
         >
           <div
             className={`flex h-fit flex-col gap-6 rounded-lg  px-7 pt-15 pb-9 shadow-[0px_0px_10px_rgba(0,0,0,0.2)] lg:p-10 bg-white ${printFiles.files.length === 0 ? "w-full md:mx-auto max-w-xl" : ""}`}

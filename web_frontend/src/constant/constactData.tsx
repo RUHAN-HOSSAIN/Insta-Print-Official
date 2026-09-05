@@ -43,7 +43,7 @@ export const contactData: ContactItem[] = [
         rel="noopener noreferrer"
         className="text-blue-700 hover:underline italic"
       >
-        +88 01932-066557
+        +88 01572-902567
       </a>
     ),
   },
@@ -58,7 +58,7 @@ export const contactData: ContactItem[] = [
         href="tel:+8801572902567"
         className="hover:underline italic"
       >
-        +88 01572-902567
+        +88 01932-066557
       </a>
     ),
   },
