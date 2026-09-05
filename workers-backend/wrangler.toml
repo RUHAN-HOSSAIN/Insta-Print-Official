@@ -1,0 +1,4 @@
+[vars]
+FRONTEND_URL = "https://instaprint-live.me"
+SUPABASE_URL = "https://bjbepojouugdmoflesgf.supabase.co"
+EPSON_CLIENT_ID = "ee37370d1ce74dc58de9bc1f8ebad663"
