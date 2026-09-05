@@ -1,88 +1,101 @@
-import { Env } from "../types";
 import { HALLS, HallId } from "../config/constants";
+import { Env } from "../types";
 import { printFile } from "../services/epson.service";
-import { validateTransactionId, verifyAmount } from "../services/payment.service";
+import {
+  findUnusedPayment,
+  verifyPaymentAmount,
+} from "../services/payment.service";
+import {
+  createPrintJobFromPayment,
+  updatePrintJobStatus,
+} from "../services/supabase.service";
 
-export async function submitPrintJob(
-  request: Request,
-  env: Env
-): Promise<Response> {
-  const corsHeaders = { "Access-Control-Allow-Origin": "*" };
+type FileSetting = { copies: number; color: "mono" | "color" };
+const corsHeaders = { "Access-Control-Allow-Origin": "*" };
 
+const errorResponse = (message: string, status: number) =>
+  Response.json({ error: message }, { status, headers: corsHeaders });
+
+export async function submitPrintJob(request: Request, env: Env): Promise<Response> {
+  let jobSiNo: number | null = null;
+  const epsonJobIds: string[] = [];
   try {
     const formData = await request.formData();
-
-    const txnId = (formData.get("txn_id") ?? formData.get("txnId")) as string;
+    const txnId = String(formData.get("txn_id") ?? formData.get("txnId") ?? "").trim();
     const amount = Number(formData.get("amount_calculated") ?? formData.get("amount"));
-    const hallId = (formData.get("hall_id") ?? formData.get("hallId")) as HallId;
-    const filesMetadataRaw = formData.get("files_metadata") as string;
-    const settingsRaw = (formData.get("settings") ?? filesMetadataRaw) as string;
-    const files = formData.getAll("files") as File[];
+    const hallId = String(formData.get("hall_id") ?? formData.get("hallId") ?? "") as HallId;
+    const paymentMethod = String(formData.get("payment_method") ?? "direct");
+    const loggedUser = String(formData.get("logged_user") ?? "false") === "true";
+    const filesMetadata = JSON.parse(String(formData.get("files_metadata") ?? "[]")) as unknown[];
+    const settings = JSON.parse(String(formData.get("settings") ?? "[]")) as FileSetting[];
+    const files = formData.getAll("files").filter((value): value is File => value instanceof File);
 
-    // Hall valid কিনা check
-    const hall = HALLS.find((h) => h.id === hallId);
-    if (!hall) {
-      return Response.json(
-        { error: "Hall not found" },
-        { status: 404, headers: corsHeaders }
+    const hall = HALLS.find((item) => item.id === hallId);
+    if (!hall) return errorResponse("Hall not found", 404);
+    if (!hall.active) return errorResponse("Hall not active yet", 400);
+    if (paymentMethod !== "direct") return errorResponse("Only direct payment is enabled", 400);
+    if (!Number.isFinite(amount) || amount <= 0) return errorResponse("Invalid amount", 400);
+    if (!files.length) return errorResponse("File required", 400);
+    if (files.length !== settings.length || files.length !== filesMetadata.length)
+      return errorResponse("File metadata mismatch", 400);
+
+    // Check the manually entered payment before creating the print job.
+    const payment = await findUnusedPayment(env, txnId);
+    if (!verifyPaymentAmount(payment.amount, amount))
+      return errorResponse("Insufficient payment amount", 402);
+
+    const totalPagePrint = filesMetadata.reduce<number>((total, item) => {
+      const metadata = item as { pages?: number; copies?: number };
+      return total + Number(metadata.pages ?? 0) * Number(metadata.copies ?? 0);
+    }, 0);
+
+    const job = await createPrintJobFromPayment(env, {
+      hallId,
+      loggedUser,
+      paymentMethod: "direct",
+      txnId,
+      amountCalculated: amount,
+      files: filesMetadata,
+      totalFiles: files.length,
+      totalPagePrint,
+    });
+    jobSiNo = job.si_no;
+
+    for (let index = 0; index < files.length; index += 1) {
+      const epsonJobId = await printFile(
+        env,
+        hall.tokenRow,
+        await files[index].arrayBuffer(),
+        files[index].name,
+        settings[index],
       );
-    }
-    if (!hall.active) {
-      return Response.json(
-        { error: "Hall not active yet" },
-        { status: 400, headers: corsHeaders }
-      );
+      epsonJobIds.push(epsonJobId);
     }
 
-    // File check
-    if (!files || files.length === 0) {
-      return Response.json(
-        { error: "File required" },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    // TxnId check
-    if (!validateTransactionId(txnId)) {
-      return Response.json(
-        { error: "Transaction ID not matched" },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    // Amount check
-    if (!verifyAmount(amount)) {
-      return Response.json(
-        { error: "Insufficient payment amount" },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    const parsedMetadata = JSON.parse(filesMetadataRaw || "[]") as {
-      copies: number;
-      color: "mono" | "color";
-    }[];
-    const settings: { copies: number; color: "mono" | "color" }[] = formData.get("settings")
-      ? JSON.parse(settingsRaw)
-      : parsedMetadata;
-
-    // একটার পর একটা print করো
-    for (let i = 0; i < files.length; i++) {
-      const fileBuffer = await files[i].arrayBuffer();
-      const fileName = files[i].name;
-      await printFile(env, hall.tokenRow, fileBuffer, fileName, settings[i]);
-    }
+    await updatePrintJobStatus(env, jobSiNo, true, epsonJobIds);
 
     return Response.json(
-      { status: "queued", totalFiles: files.length },
-      { headers: corsHeaders }
+      {
+        status: "queued",
+        totalFiles: files.length,
+        printJobSiNo: jobSiNo,
+        epsonJobIds,
+      },
+      { headers: corsHeaders },
     );
-
-  } catch (err: any) {
-    console.error("Print job failed:", err);
-    return Response.json(
-      { error: "Print job failed" },
-      { status: 500, headers: corsHeaders }
-    );
+  } catch (error) {
+    if (jobSiNo !== null) {
+      await updatePrintJobStatus(
+        env,
+        jobSiNo,
+        false,
+        epsonJobIds,
+        error instanceof Error ? error.message : "Print job failed",
+      );
+    }
+    console.error("Print job failed:", error);
+    const message = error instanceof Error ? error.message : "Print job failed";
+    const status = /payment|insufficient/i.test(message) ? 402 : 500;
+    return errorResponse(message, status);
   }
 }

@@ -2,10 +2,7 @@
 import { useEffect, useState } from "react";
 import { HALLS } from "../../constant/halls";
 
-const collectionPoints = [
-  ...HALLS,
-  { id: "N/A", name: "Coming soon...", active: false },
-];
+const collectionPoints = HALLS.filter((hall) => hall.active);
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 type PrinterStatusResponse = { connected?: boolean; error?: string };
@@ -20,11 +17,7 @@ const PrinterStatus = ({ onSelectionChange, hasError = false }: PrinterStatusPro
   const [printerStatus, setPrinterStatus] = useState<{
     point: string;
     connected: boolean;
-    error?: string;
   } | null>(null);
-  const selectedCollectionPoint = collectionPoints.find(
-    (point) => point.id === selectedPoint,
-  );
 
   useEffect(() => {
     if (!selectedPoint) return;
@@ -44,7 +37,6 @@ const PrinterStatus = ({ onSelectionChange, hasError = false }: PrinterStatusPro
         setPrinterStatus({
           point: selectedPoint,
           connected: false,
-          error: error instanceof Error ? error.message : "Unable to read printer status",
         });
       });
 
@@ -53,7 +45,6 @@ const PrinterStatus = ({ onSelectionChange, hasError = false }: PrinterStatusPro
 
   const isLoading = Boolean(selectedPoint && printerStatus?.point !== selectedPoint);
   const displayedConnection = printerStatus?.point === selectedPoint ? printerStatus.connected : null;
-  const displayedError = printerStatus?.point === selectedPoint ? printerStatus.error ?? "" : "";
   const statusLabel = isLoading ? "Checking" : displayedConnection ? "Online" : selectedPoint ? "Offline" : "Select a hall";
   const statusClasses = isLoading
     ? "bg-amber-50 text-amber-700"
@@ -99,21 +90,21 @@ const PrinterStatus = ({ onSelectionChange, hasError = false }: PrinterStatusPro
             Choose a collection point
           </option>
           {collectionPoints.map((point) => (
-            <option key={point.id} value={point.id} disabled={!point.active}>
-              {point.name}{point.active ? "" : " (Coming soon)"}
+            <option key={point.id} value={point.id}>
+              {point.name}
             </option>
           ))}
         </select>
       </label>
 
-      <p className="font-roboto text-[13px] md:text-sm leading-5 text-red-700">
+      {/* <p className="font-roboto text-[13px] md:text-sm leading-5 text-red-700">
         <span className="font-bold">Queue: </span>
         {displayedError
           ? displayedError
           : selectedCollectionPoint
             ? `${selectedCollectionPoint.name}  5 jobs ahead you`
             : "Choose a hall to see its live printer queue."}
-      </p>
+      </p> */}
     </div>
   );
 };

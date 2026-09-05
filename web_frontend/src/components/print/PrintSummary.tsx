@@ -5,9 +5,11 @@ interface PrintSummaryProps {
   roundedTotalPrice: number;
   transactionId: string;
   transactionError: boolean;
+  showTransactionInput: boolean;
   formError: string;
   submitMessage: string;
   isBusy: boolean;
+  walletInsufficient: boolean;
   onTransactionChange: (value: string) => void;
   onClear: () => void;
   onPrint: () => void;
@@ -21,9 +23,11 @@ const PrintSummary = ({
   roundedTotalPrice,
   transactionId,
   transactionError,
+  showTransactionInput,
   formError,
   submitMessage,
   isBusy,
+  walletInsufficient,
   onTransactionChange,
   onClear,
   onPrint,
@@ -34,16 +38,18 @@ const PrintSummary = ({
   <div className="flex-1 md:sticky top-24 self-start p-6 lg:p-10 shadow-[0px_0px_10px_rgba(0,0,0,0.2)] rounded-lg max-md:bg-linear-to-tr from-blue-600 to-blue-300 md:bg-white ">
     {children}
     <div className="flex items-center justify-between gap-7 my-5 mr-2">
-      <div className="shadow-[0px_0px_4px_rgba(0,0,0,0.2)] border border-gray-300 rounded-lg px-3 py-2 flex items-center justify-between gap-3 w-full bg-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-200">
-        <input
-          type="text"
-          placeholder="Transaction ID"
-          value={transactionId}
-          onChange={(event) => onTransactionChange(event.target.value)}
-          aria-invalid={transactionError}
-          className={`w-full focus:outline-none ${transactionError ? "text-red-700" : ""}`}
-        />
-      </div>
+      {showTransactionInput && (
+        <div className="shadow-[0px_0px_4px_rgba(0,0,0,0.2)] border border-gray-300 rounded-lg px-3 py-2 flex items-center justify-between gap-3 w-full bg-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-200">
+          <input
+            type="text"
+            placeholder="Transaction ID"
+            value={transactionId}
+            onChange={(event) => onTransactionChange(event.target.value)}
+            aria-invalid={transactionError}
+            className={`w-full focus:outline-none ${transactionError ? "text-red-700" : ""}`}
+          />
+        </div>
+      )}
       {coverLetterToggle}
     </div>
     {coverLetterFields}
@@ -56,6 +62,9 @@ const PrintSummary = ({
         <h1  className="max-md:text-white text-blue-700 text-3xl">৳ {roundedTotalPrice}</h1>
       </div>
     </div>
+    {walletInsufficient && !formError && (
+      <p className="mb-3 text-sm text-red-600">Insufficient wallet balance.</p>
+    )}
     {(formError || submitMessage) && (
       <p
         className={`mb-3 text-sm ${formError ? "text-red-600" : "text-green-600"}`}
@@ -75,10 +84,10 @@ const PrintSummary = ({
         <button
           type="button"
           onClick={onPrint}
-          disabled={isBusy}
+          disabled={isBusy || walletInsufficient}
           className="flex-3 w-full rounded-lg bg-green-600 px-4 py-2 font-bold text-white transition-transform hover:scale-102 disabled:cursor-wait disabled:opacity-60"
         >
-          {isBusy ? "Preparing..." : "Start Printing"}
+          {isBusy ? "Preparing..." : walletInsufficient ? "Insufficient balance" : "Start Printing"}
         </button>
       </div>
       {/* {generatedCoverLetter && (

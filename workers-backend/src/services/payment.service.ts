@@ -1,15 +1,39 @@
-// আপাতত dummy — পরে Supabase থেকে verify করবো
-import { DUMMY_TXN_ID, EXPECTED_AMOUNT } from "../config/constants";
+import { Env } from "../types";
+import { getSupabase } from "./supabase.service";
 
-// TxnId Supabase এ আছে কিনা check করো (আপাতত dummy compare)
-export function validateTransactionId(txnId: string): boolean {
-  const bkashRegex = /^[A-Z0-9]{10}$/;
-
-  return bkashRegex.test(txnId) && txnId === DUMMY_TXN_ID;
+export interface PaymentRecord {
+  si_no: number;
+  txn_id: string;
+  via: string;
+  sender_number: string;
+  amount: number;
+  status: "not_used" | "used";
+  use_for: "direct_print" | "top_up" | null;
+  print_job_si_no: number | null;
 }
 
-// User যা pay করেছে তা expected amount এর সমান কিনা
-export function verifyAmount(amount: number): boolean {
-  
-  return amount >= EXPECTED_AMOUNT;
+export async function findUnusedPayment(
+  env: Env,
+  txnId: string,
+): Promise<PaymentRecord> {
+  const normalizedTxnId = txnId.trim();
+  if (!normalizedTxnId) throw new Error("Payment transaction ID is required");
+
+  const { data, error } = await getSupabase(env)
+    .from("payments")
+    .select("si_no, txn_id, via, sender_number, amount, status, use_for, print_job_si_no")
+    .eq("txn_id", normalizedTxnId)
+    .eq("status", "not_used")
+    .maybeSingle();
+
+  if (error) throw new Error("Unable to verify payment");
+  if (!data) throw new Error("Payment not found or already used");
+  return data as PaymentRecord;
+}
+
+export function verifyPaymentAmount(
+  paymentAmount: number,
+  calculatedAmount: number,
+): boolean {
+  return Number.isFinite(calculatedAmount) && calculatedAmount > 0 && paymentAmount >= calculatedAmount;
 }

@@ -8,13 +8,16 @@ import { CoverLetterDetails, CoverLetterToggle, } from "../../components/print/C
 import PrintSummary from "../../components/print/PrintSummary";
 import PrinterStatus from "./PrinterStatus";
 import { createCoverLetterPdf } from "../../utils/createCoverLetterPdf";
-import type { PrintFile } from "../../types/PrintRequest";
+import type { PaymentMethod, PrintFile } from "../../types/PrintRequest";
 import { usePrintFiles } from "../../hooks/usePrintFiles";
+import { useAuth } from "../../context/useAuth";
 
 import mainLogo from "../../assets/logo_main.webp";
 
 const Body = () => {
   const printFiles = usePrintFiles();
+  const { user } = useAuth();
+  const loggedUser = Boolean(user);
   const [isDragging, setIsDragging] = useState(false);
   const [coverLetterEnabled, setCoverLetterEnabled] = useState(false);
   const [coverLetterName, setCoverLetterName] = useState("");
@@ -26,9 +29,11 @@ const Body = () => {
   const [hallId, setHallId] = useState("");
   const [printerOnline, setPrinterOnline] = useState(false);
   const [transactionId, setTransactionId] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("direct");
   const [formError, setFormError] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
   const [printerKey, setPrinterKey] = useState(0);
+  const activePaymentMethod = loggedUser ? paymentMethod : "direct";
 
   const clearGeneratedCoverLetter = () => {
     if (!generatedCoverLetter) return;
@@ -66,6 +71,7 @@ const Body = () => {
     setHallId("");
     setPrinterOnline(false);
     setTransactionId("");
+    setPaymentMethod("direct");
     setFormError("");
     setSubmitMessage("");
     setPrinterKey((key) => key + 1);
@@ -85,13 +91,16 @@ const Body = () => {
     setSubmitMessage("");
     if (!printFiles.files.length)
       return setFormError("Please upload at least one PDF file.");
+    if (printFiles.files.some((file) => file.size > 15 * 1024 * 1024))
+      return setFormError("Each PDF file must be 15 MB or smaller.");
     if (!hallId) return setFormError("Please select a collection hall.");
     if (!printerOnline)
       return setFormError("The selected hall printer must be online.");
-    if (!transactionId.trim())
+    if (activePaymentMethod === "direct" && !transactionId.trim())
       return setFormError("Please enter your transaction ID.");
     if (
       coverLetterEnabled &&
+      !loggedUser &&
       (!coverLetterName.trim() || !/^\d{7}$/.test(coverLetterRoll))
     )
       return setFormError(
@@ -106,7 +115,7 @@ const Body = () => {
       let metadata = printFiles.details.filter(
         (_, index) => printFiles.files[index] !== generatedCoverLetter,
       );
-      if (coverLetterEnabled) {
+      if (coverLetterEnabled && !loggedUser) {
         const cover = await createCoverLetterPdf(
           coverLetterName.trim(),
           coverLetterRoll,
@@ -123,22 +132,25 @@ const Body = () => {
         return setFormError("Please wait until every PDF page count is ready.");
       const details = metadata as PrintFile[];
       const amount = Math.floor(
-        details.reduce((sum, item) => sum + item.subtotal, 0),
+        details.reduce((sum, item) => sum + item.subtotal, 0) +
+          (coverLetterEnabled && loggedUser ? 1 : 0),
       );
       const totalPage = details.reduce(
         (sum, item) => sum + item.pages * item.copies,
         0,
       );
+      if (amount <= 0) return setFormError("Calculated amount must be greater than zero.");
 
       const result = await submitPrintJob(
         {
           hall_id: hallId,
-          txn_id: transactionId.trim(),
+          txn_id: activePaymentMethod === "wallet" ? "" : transactionId.trim(),
+          payment_method: activePaymentMethod,
           amount_calculated: amount,
           files: details,
           total_files: files.length,
           total_page: totalPage,
-          cover_letter: coverLetterEnabled,
+          logged_user: loggedUser,
         },
         files,
       );
@@ -161,6 +173,9 @@ const Body = () => {
   const totalPrice =
     printFiles.totals.reduce((sum, total) => sum + total, 0) +
     (coverLetterEnabled && !generatedCoverLetter ? 1 : 0);
+  const walletBalance = user?.wallet_balance ?? 0;
+  const walletInsufficient =
+    loggedUser && activePaymentMethod === "wallet" && walletBalance < Math.floor(totalPrice);
 
   return (
     <>
@@ -238,9 +253,11 @@ const Body = () => {
               roundedTotalPrice={Math.floor(totalPrice)}
               transactionId={transactionId}
               transactionError={errorMentions("transaction")}
+              showTransactionInput={activePaymentMethod === "direct"}
               formError={formError}
               submitMessage={submitMessage}
               isBusy={isBusy}
+              walletInsufficient={walletInsufficient}
               onTransactionChange={setTransactionId}
               onClear={handleClear}
               onPrint={() => void handlePrint()}
@@ -251,7 +268,7 @@ const Body = () => {
                 />
               }
               coverLetterFields={
-                coverLetterEnabled ? (
+                coverLetterEnabled && !loggedUser ? (
                   <CoverLetterDetails
                     name={coverLetterName}
                     roll={coverLetterRoll}
@@ -269,7 +286,12 @@ const Body = () => {
                 }}
                 hasError={errorMentions("hall")}
               />
-              <PaymentMethodsPanel />
+              <PaymentMethodsPanel
+                loggedUser={loggedUser}
+                paymentMethod={activePaymentMethod}
+                walletBalance={walletBalance}
+                onPaymentMethodChange={setPaymentMethod}
+              />
             </PrintSummary>
           )}
         </div>

@@ -1,7 +1,5 @@
 export const EPSON_AUTH_URL = "https://auth.epsonconnect.com";
 export const EPSON_BASE_URL = "https://api.epsonconnect.com";
-export const DUMMY_TXN_ID = "ABCDE12345";
-export const EXPECTED_AMOUNT = 0;
 
 export const HALLS = [
   {

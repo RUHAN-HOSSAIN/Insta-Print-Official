@@ -1,4 +1,5 @@
 export type PrintColor = "color" | "mono";
+export type PaymentMethod = "direct" | "wallet";
 
 export interface PrintFile {
   name: string;
@@ -11,9 +12,10 @@ export interface PrintFile {
 export interface PrintFormValues {
   hall_id: string;
   txn_id: string;
+  payment_method: PaymentMethod;
   amount_calculated: number;
   files: PrintFile[];
   total_files: number;
   total_page: number;
-  cover_letter: boolean;
+  logged_user: boolean;
 }

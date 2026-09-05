@@ -16,7 +16,7 @@ export async function printFile(
   fileName: string,
   settings: { copies: number; color: "mono" | "color" },
   isRetry = false
-): Promise<void> {
+): Promise<string> {
   const { access_token } = await getTokens(env, tokenRow);
 
   const jobRes = await fetch(`${EPSON_BASE_URL}/api/2/printing/jobs`, {
@@ -48,6 +48,8 @@ export async function printFile(
   if (!jobRes.ok) throw new Error(`Job create failed: ${jobRes.status}`);
 
   const { jobId, uploadUri } = await jobRes.json() as any;
+  if (typeof jobId !== "string" || !jobId || typeof uploadUri !== "string" || !uploadUri)
+    throw new Error("Epson did not return a valid job ID or upload URL");
 
   const uploadRes = await fetch(`${uploadUri}&File=${fileName}`, {
     method: "POST",
@@ -68,4 +70,5 @@ export async function printFile(
   if (!printRes.ok) throw new Error(`Print execute failed: ${printRes.status}`);
 
   console.log(`✓ Printed: ${fileName}`);
+  return jobId;
 }
