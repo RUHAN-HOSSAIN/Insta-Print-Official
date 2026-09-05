@@ -36,9 +36,6 @@ const Body = () => {
   const activePaymentMethod = loggedUser ? paymentMethod : "direct";
 
   const clearGeneratedCoverLetter = () => {
-    if (!generatedCoverLetter) return;
-    const index = printFiles.files.indexOf(generatedCoverLetter);
-    if (index >= 0) printFiles.removeFile(index);
     setGeneratedCoverLetter(null);
   };
 
@@ -79,9 +76,7 @@ const Body = () => {
 
   const handleCoverToggle = (enabled: boolean) => {
     setCoverLetterEnabled(enabled);
-    if (!enabled && generatedCoverLetter) {
-      const index = printFiles.files.indexOf(generatedCoverLetter);
-      if (index >= 0) printFiles.removeFile(index);
+    if (!enabled) {
       setGeneratedCoverLetter(null);
     }
   };
@@ -126,7 +121,6 @@ const Body = () => {
           { name: cover.name, pages: 1, copies: 1, color: "mono", subtotal: 1 },
         ];
         setGeneratedCoverLetter(cover);
-        printFiles.replaceFiles(files, metadata);
       }
       if (metadata.some((item) => !item))
         return setFormError("Please wait until every PDF page count is ready.");
@@ -172,7 +166,7 @@ const Body = () => {
     formError.toLowerCase().includes(field);
   const totalPrice =
     printFiles.totals.reduce((sum, total) => sum + total, 0) +
-    (coverLetterEnabled && !generatedCoverLetter ? 1 : 0);
+    (coverLetterEnabled ? 1 : 0);
   const walletBalance = user?.wallet_balance ?? 0;
   const walletInsufficient =
     loggedUser && activePaymentMethod === "wallet" && walletBalance < Math.floor(totalPrice);

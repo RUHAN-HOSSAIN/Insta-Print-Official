@@ -28,11 +28,11 @@ const Toggle = ({
     role="switch"
     aria-checked={checked}
     onClick={() => onChange(!checked)}
-    className={`relative w-13 h-7 md:w-14 md:h-8 rounded-full transition-colors duration-200 focus:outline-none border border-gray-100
+    className={`relative w-13 h-7 min-[900px]:w-14 min-[900px]:h-8 rounded-full transition-colors duration-200 focus:outline-none border border-gray-100
       ${checked ? "bg-blue-500" : "bg-[#E9E9EA]"}`}
   >
     <span
-      className={`absolute top-1 left-1 w-5 h-5 md:w-6 md:h-6 bg-white rounded-full shadow-md transition-transform duration-200
+      className={`absolute top-1 left-1 w-5 h-5 min-[900px]:w-6 min-[900px]:h-6 bg-white rounded-full shadow-md transition-transform duration-200
         ${checked ? "translate-x-6" : "translate-x-0"}`}
     />
   </button>
@@ -111,7 +111,7 @@ const SelectedFileCard = ({ file, index, onRemove, onTotalChange, onDetailsChang
           className={`flex justify-between items-center px-4 py-3 rounded border border-gray-100 hover:scale-104 transition-all duration-300 shadow-[0px_0px_5px_rgba(0,0,0,0.1)]
                       ${isColor ? "bg-white shadow-[0px_0px_10px_rgba(0,0,0,0.3)]" : "bg-[#F9F9F9]"}`}
         >
-          <span className=" md:text-lg text-gray-600 font-semibold">Color Printing</span>
+          <span className=" min-[900px]:text-lg text-gray-600 font-semibold">Color Printing</span>
           <Toggle checked={isColor} onChange={setIsColor} />
         </div>
 
@@ -120,22 +120,22 @@ const SelectedFileCard = ({ file, index, onRemove, onTotalChange, onDetailsChang
           className={`flex justify-between items-center px-4 py-3 rounded border border-gray-100 hover:scale-104 transition-all duration-300 shadow-[0px_0px_5px_rgba(0,0,0,0.1)]
                       ${copies > 1 ? "bg-white shadow-[0px_0px_10px_rgba(0,0,0,0.3)]" : "bg-[#F9F9F9]"}`}
           >
-          <span className="md:text-lg text-gray-600 font-semibold">Copies</span>
+          <span className="min-[900px]:text-lg text-gray-600 font-semibold">Copies</span>
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={decreaseCopies}
-              className="w-6 h-6 md:w-8 md:h-8 rounded border border-gray-300 bg-white text-gray-700 text-lg font-medium hover:bg-gray-100 active:scale-95 transition-all flex items-center justify-center"
+              className="w-6 h-6 min-[900px]:w-8 min-[900px]:h-8 rounded border border-gray-300 bg-white text-gray-700 text-lg font-medium hover:bg-gray-100 active:scale-95 transition-all flex items-center justify-center"
             >
               -
             </button>
-            <div className="w-8 h-6 md:w-12 md:h-8 rounded border border-gray-300 bg-white flex items-center justify-center text-sm font-semibold text-gray-800">
+            <div className="w-8 h-6 min-[900px]:w-12 min-[900px]:h-8 rounded border border-gray-300 bg-white flex items-center justify-center text-sm font-semibold text-gray-800">
               {copies}
             </div>
             <button
               type="button"
               onClick={increaseCopies}
-              className="w-6 h-6 md:w-8 md:h-8 rounded border border-gray-300 bg-white text-gray-700 text-lg font-medium hover:bg-gray-100 active:scale-95 transition-all flex items-center justify-center"
+              className="w-6 h-6 min-[900px]:w-8 min-[900px]:h-8 rounded border border-gray-300 bg-white text-gray-700 text-lg font-medium hover:bg-gray-100 active:scale-95 transition-all flex items-center justify-center"
             >
               +
             </button>

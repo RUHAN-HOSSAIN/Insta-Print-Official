@@ -117,7 +117,7 @@ const Header = () => {
           </Link>
         </div>
 
-        <div className="max-sm:hidden flex-1 flex items-center justify-between gap-5 md:gap-7 font-spaceG lg:text-[17px] text-black cursor-pointer">
+        <div className="max-md:hidden flex-1 flex items-center justify-between gap-5 md:gap-7 font-spaceG lg:text-[17px] text-black cursor-pointer">
           {navData.map((item: { title: string; to: string }, index: number) => (
             <Link
               to={item.to}
@@ -148,13 +148,13 @@ const Header = () => {
             <button 
               type="button" 
               onClick={() => setAuthModal("login")} 
-              className="z-50 shrink-0 max-lg:hidden rounded-md bg-blue-700 px-4 py-2 text-white shadow-md transition-all hover:scale-105 hover:bg-blue-800">
+              className="z-50 shrink-0 max-md:hidden rounded-md bg-blue-700 px-4 py-2 text-white shadow-md transition-all hover:scale-105 hover:bg-blue-800">
               Sign In
             </button>
           )}
         </div>
 
-        <div className="sm:hidden flex-1 flex items-center justify-end cursor-pointer">
+        <div className="md:hidden flex-1 flex items-center justify-end cursor-pointer">
           {isMenuOpen ? (
             <CloseIcon
               className="text-slate-800 w-6"
