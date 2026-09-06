@@ -62,11 +62,18 @@ const PaymentMethodsPanel = ({
           </div>
         </fieldset>
       )}
-      <h2 className="font-spaceG text-md sm:text-xl font-bold text-blue-600">Pay via (Send Money)</h2>
+      <h2 className="font-spaceG text-md sm:text-xl font-bold text-blue-600">
+        Pay via (Send Money) <sup className="text-xs text-red-400">*Pay Exact</sup>
+      </h2>
       <div>
         {paymentMethods.map((method) => (
-          <div key={method.medium} className="flex items-center gap-2 sm:gap-3 md:gap-5 my-2 mr-2">
-            <span className={`font-medium text-sm sm:text-base shrink-0 ${method.status === "unavailable" ? "text-gray-500" : "text-gray-800"}`}>
+          <div
+            key={method.medium}
+            className="flex items-center gap-2 sm:gap-3 md:gap-5 my-2 mr-2"
+          >
+            <span
+              className={`font-medium text-sm sm:text-base shrink-0 ${method.status === "unavailable" ? "text-gray-500" : "text-gray-800"}`}
+            >
               <b>{method.medium}:</b> {method.number}
             </span>
             <button
@@ -74,8 +81,16 @@ const PaymentMethodsPanel = ({
               disabled={method.status === "unavailable"}
               onClick={() => void copyNumber(method.medium, method.number)}
               className={`transition ${method.status === "unavailable" ? "cursor-not-allowed text-gray-700" : "text-gray-700 hover:scale-107 hover:text-blue-600"}`}
-              aria-label={method.status === "unavailable" ? `${method.medium} number currently unavailable` : `Copy ${method.medium} number`}
-              title={method.status === "unavailable" ? "Currently unavailable" : `Copy ${method.medium} number`}
+              aria-label={
+                method.status === "unavailable"
+                  ? `${method.medium} number currently unavailable`
+                  : `Copy ${method.medium} number`
+              }
+              title={
+                method.status === "unavailable"
+                  ? "Currently unavailable"
+                  : `Copy ${method.medium} number`
+              }
             >
               <CopyIcon className="w-5 h-5 md:w-6 md:h-6" />
             </button>

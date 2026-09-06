@@ -70,39 +70,60 @@ function getRatesFromCoverage(
 }
 
 /**
+ * একটা single page render করে তার ink coverage বের করে।
+ * প্রতিটা page এর জন্য নিজের canvas ব্যবহার করে, যাতে parallel render নিরাপদ হয়
+ * (একই canvas শেয়ার করলে concurrent render এ race condition হতো)।
+ */
+async function getPageCoverage(
+  pdf: pdfjsLib.PDFDocumentProxy,
+  pageNumber: number,
+  scale: number,
+): Promise<number> {
+  const page = await pdf.getPage(pageNumber);
+  const viewport = page.getViewport({ scale });
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+
+  if (!ctx) {
+    return 0;
+  }
+
+  await page.render({ canvasContext: ctx, viewport, canvas } as never).promise;
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  return calculateCoverage(imageData);
+}
+
+/**
  * PDF এর প্রথম ৩টা page sample করে average ink coverage বের করে,
  * এবং সেই অনুযায়ী B&W ও Color উভয়ের dynamic rate রিটার্ন করে।
  * Fail করলে (corrupt PDF, worker error ইত্যাদি) base rate এ fallback করে।
  */
-
 export async function analyzePdfInkCoverage(
   file: File,
   baseBwRate: number,
   baseColorRate: number,
 ): Promise<InkAnalysisResult> {
+  // ছোট scale = কম pixel = দ্রুত render + দ্রুত getImageData, coverage% এ accuracy loss নগণ্য
+  const RENDER_SCALE = 0.5;
+
   try {
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     const numPages = pdf.numPages || 1;
     const pagesToSample = Math.min(3, numPages);
 
-    let totalCoverage = 0;
-    for (let i = 1; i <= pagesToSample; i++) {
-      const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale: 0.5 });
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+    // ৩টা page sequential এর বদলে parallel এ render করা হচ্ছে —
+    // প্রতিটা page এর নিজের canvas আছে বলে এটা নিরাপদ, আর total time
+    // "সবচেয়ে ধীর page" এর সমান হয়ে যায়, তিনটার যোগফলের বদলে।
+    const coverages = await Promise.all(
+      Array.from({ length: pagesToSample }, (_, idx) =>
+        getPageCoverage(pdf, idx + 1, RENDER_SCALE),
+      ),
+    );
 
-      if (ctx) {
-        await page.render({ canvasContext: ctx, viewport, canvas } as never)
-          .promise;
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        totalCoverage += calculateCoverage(imageData);
-      }
-    }
-
+    const totalCoverage = coverages.reduce((sum, c) => sum + c, 0);
     const avgCoverage = Math.round((totalCoverage / pagesToSample) * 10) / 10;
     const { bwRate, colorRate } = getRatesFromCoverage(
       avgCoverage,

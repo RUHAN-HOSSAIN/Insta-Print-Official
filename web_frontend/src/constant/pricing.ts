@@ -1,5 +1,4 @@
 
-
 export const pricingData = [
   {
     mode: "Black & White",
