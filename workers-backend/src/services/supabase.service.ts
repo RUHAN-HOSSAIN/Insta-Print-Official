@@ -11,6 +11,7 @@ export interface PrintJobInput {
   files: unknown[];
   totalFiles: number;
   totalPagePrint: number;
+  comments?: string | null;
 }
 
 export function getSupabase(env: Env): SupabaseClient {
@@ -31,9 +32,6 @@ export async function createPrintJobFromPayment(
 
   if (paymentError) throw new Error("Unable to verify payment");
   if (!payment) throw new Error("Payment not found or already used");
-  if (Number(payment.amount) < input.amountCalculated)
-    throw new Error("Insufficient payment amount");
-
   const { data: job, error: jobError } = await supabase
     .from("print_jobs")
     .insert({
@@ -47,6 +45,7 @@ export async function createPrintJobFromPayment(
       files: input.files,
       total_files: input.totalFiles,
       total_page_print: input.totalPagePrint,
+      comments: input.comments ?? null,
       status: false,
     })
     .select("si_no")

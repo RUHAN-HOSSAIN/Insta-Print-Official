@@ -37,3 +37,15 @@ export function verifyPaymentAmount(
 ): boolean {
   return Number.isFinite(calculatedAmount) && calculatedAmount > 0 && paymentAmount >= calculatedAmount;
 }
+
+export function getPaymentComment(
+  paymentAmount: number,
+  calculatedAmount: number,
+): string | null {
+  const paymentCents = Math.round(paymentAmount * 100);
+  const calculatedCents = Math.round(calculatedAmount * 100);
+
+  if (paymentCents === calculatedCents) return null;
+  if (paymentCents < calculatedCents) return `Less: ${paymentAmount.toFixed(2)}`;
+  return `Extra: ${((paymentCents - calculatedCents) / 100).toFixed(2)}`;
+}

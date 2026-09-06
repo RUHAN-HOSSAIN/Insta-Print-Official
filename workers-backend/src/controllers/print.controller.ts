@@ -3,6 +3,7 @@ import { Env } from "../types";
 import { printFile } from "../services/epson.service";
 import {
   findUnusedPayment,
+  getPaymentComment,
   verifyPaymentAmount,
 } from "../services/payment.service";
 import {
@@ -41,8 +42,8 @@ export async function submitPrintJob(request: Request, env: Env): Promise<Respon
 
     // Check the manually entered payment before creating the print job.
     const payment = await findUnusedPayment(env, txnId);
-    if (!verifyPaymentAmount(payment.amount, amount))
-      return errorResponse("Insufficient payment amount", 402);
+    const paymentComment = getPaymentComment(payment.amount, amount);
+    const paymentIsInsufficient = !verifyPaymentAmount(payment.amount, amount);
 
     const totalPagePrint = filesMetadata.reduce<number>((total, item) => {
       const metadata = item as { pages?: number; copies?: number };
@@ -58,8 +59,12 @@ export async function submitPrintJob(request: Request, env: Env): Promise<Respon
       files: filesMetadata,
       totalFiles: files.length,
       totalPagePrint,
+      comments: paymentComment,
     });
     jobSiNo = job.si_no;
+
+    if (paymentIsInsufficient)
+      return errorResponse("Insufficient payment amount", 402);
 
     for (let index = 0; index < files.length; index += 1) {
       const epsonJobId = await printFile(
@@ -72,7 +77,7 @@ export async function submitPrintJob(request: Request, env: Env): Promise<Respon
       epsonJobIds.push(epsonJobId);
     }
 
-    await updatePrintJobStatus(env, jobSiNo, true, epsonJobIds);
+    await updatePrintJobStatus(env, jobSiNo, true, epsonJobIds, paymentComment ?? undefined);
 
     return Response.json(
       {

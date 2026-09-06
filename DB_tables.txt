@@ -66,6 +66,25 @@ create table payments (
   created_at timestamptz default now()
 );
 
+insert into payments (
+  via,
+  txn_id,
+  sender_number,
+  amount,
+  status,
+  use_for,
+  print_job_si_no
+) values (
+  'bkash',
+  'ABCDE12345',
+  '01700000000',
+  100.00,
+  'not_used',
+  null,
+  null
+)
+on conflict (txn_id) do nothing;
+
 
 
 
@@ -92,3 +111,11 @@ create table user_data (
   account_created_date timestamptz default now(),
   updated_at timestamptz default now()
 );
+
+
+
+
+
+## Restart the table 2 and 3....
+
+truncate table print_jobs, payments restart identity cascade;
