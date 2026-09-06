@@ -136,7 +136,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="z-10 flex-3/10 flex flex-col gap-3">
+        <div className="z-10 flex-3/10 min-w-0 w-full flex flex-col gap-3">
           <h4 className="text-shadow-sm text-base font-semibold tracking-wider uppercase mb-5">
             Send feedback
           </h4>

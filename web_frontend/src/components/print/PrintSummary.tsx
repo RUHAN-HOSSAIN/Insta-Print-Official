@@ -56,10 +56,14 @@ const PrintSummary = ({
     <div className="flex justify-between items-center text-2xl my-4 mx-2">
       <h2 className="font-medium text-gray-900 max-md:text-white">Total Price</h2>
       <div className="font-bold flex items-baseline gap-2">
-        <h3 className="font-normal text-lg text-gray-500 max-md:text-gray-100 line-through">
-          ৳ {totalPrice.toFixed(2)}
-        </h3>
-        <h1  className="max-md:text-white text-blue-700 text-3xl">৳ {roundedTotalPrice}</h1>
+        {totalPrice !== roundedTotalPrice && (
+          <h3 className="font-normal text-lg text-gray-500 max-md:text-gray-100 line-through">
+            ৳ {totalPrice.toFixed(2)}
+          </h3>
+        )}
+        <h1 className="max-md:text-white text-blue-700 text-3xl">
+          ৳ {roundedTotalPrice}
+        </h1>
       </div>
     </div>
     {walletInsufficient && !formError && (

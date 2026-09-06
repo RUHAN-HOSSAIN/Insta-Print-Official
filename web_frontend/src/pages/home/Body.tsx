@@ -11,6 +11,7 @@ import { createCoverLetterPdf } from "../../utils/createCoverLetterPdf";
 import type { PaymentMethod, PrintFile } from "../../types/PrintRequest";
 import { usePrintFiles } from "../../hooks/usePrintFiles";
 import { useAuth } from "../../context/useAuth";
+import { roundPrintAmount } from "../../utils/roundPrintAmount";
 
 import mainLogo from "../../assets/logo_main.webp";
 
@@ -125,7 +126,7 @@ const Body = () => {
       if (metadata.some((item) => !item))
         return setFormError("Please wait until every PDF page count is ready.");
       const details = metadata as PrintFile[];
-      const amount = Math.floor(
+      const amount = roundPrintAmount(
         details.reduce((sum, item) => sum + item.subtotal, 0) +
           (coverLetterEnabled && loggedUser ? 1 : 0),
       );
@@ -167,9 +168,10 @@ const Body = () => {
   const totalPrice =
     printFiles.totals.reduce((sum, total) => sum + total, 0) +
     (coverLetterEnabled ? 1 : 0);
+  const roundedTotalPrice = roundPrintAmount(totalPrice);
   const walletBalance = user?.wallet_balance ?? 0;
   const walletInsufficient =
-    loggedUser && activePaymentMethod === "wallet" && walletBalance < Math.floor(totalPrice);
+    loggedUser && activePaymentMethod === "wallet" && walletBalance < roundedTotalPrice;
 
   return (
     <>
@@ -244,7 +246,7 @@ const Body = () => {
           {printFiles.files.length > 0 && (
             <PrintSummary
               totalPrice={totalPrice}
-              roundedTotalPrice={Math.floor(totalPrice)}
+              roundedTotalPrice={roundedTotalPrice}
               transactionId={transactionId}
               transactionError={errorMentions("transaction")}
               showTransactionInput={activePaymentMethod === "direct"}

@@ -55,7 +55,12 @@ const SelectedFileCard = ({
   const [pageCountError, setPageCountError] = useState(false);
 
   // dynamic ink analysis state — file এর জন্য একবারই চলে
-  const [inkRates, setInkRates] = useState<{ bwRate: number; colorRate: number; isDynamic: boolean } | null>(null);
+  const [inkRates, setInkRates] = useState<{
+    bwRate: number;
+    colorRate: number;
+    isDynamic: boolean;
+    inkMessage: string | null;
+  } | null>(null);
 
   useEffect(() => {
     let isCurrentFile = true;
@@ -76,6 +81,7 @@ const SelectedFileCard = ({
             bwRate: result.bwRate,
             colorRate: result.colorRate,
             isDynamic: result.isDynamic,
+            inkMessage: result.inkMessage,
           });
         }
       });
@@ -155,13 +161,20 @@ const SelectedFileCard = ({
         <span>
           {pageCount === null ? "Reading pages..." : `${pageCount}p`} &times; {isCoverLetter ? "Cover letter" : isColor ? "Color" : "B&W"} &times; {isCoverLetter ? "1" : copies}
         </span>
-        <span
-          className={`font-semibold text-lg ${
-            !isCoverLetter && isDynamicPrice ? "text-yellow-500" : "text-gray-900"
-          }`}
-        >
-          ৳ {pageCount === null ? "-" : isDynamicPrice && !isCoverLetter ? total.toFixed(2) : total}
-        </span>
+        <div className="flex items-baseline gap-2 text-right">
+          {!isCoverLetter && inkRates?.inkMessage && (
+            <span className="text-[10px] md:text-xs text-yellow-500">
+              {inkRates.inkMessage}
+            </span>
+          )}
+          <span
+            className={`font-semibold text-lg ${
+              !isCoverLetter && isDynamicPrice ? "text-yellow-500" : "text-gray-900"
+            }`}
+          >
+            ৳ {pageCount === null ? "-" : isDynamicPrice && !isCoverLetter ? total.toFixed(2) : total}
+          </span>
+        </div>
       </div>
     </div>
   );

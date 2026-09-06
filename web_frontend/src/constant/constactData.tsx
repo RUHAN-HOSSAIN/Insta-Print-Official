@@ -15,7 +15,7 @@ export const contactData: ContactItem[] = [
     title: "Our Location",
     description: (
       <>
-        Room 204, New Male Hall-2
+        New Male Hall-2
         <br />
         RUET Campus
         <br />

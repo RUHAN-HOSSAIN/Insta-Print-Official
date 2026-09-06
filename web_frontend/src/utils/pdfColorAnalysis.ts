@@ -11,9 +11,10 @@ if (typeof window !== "undefined") {
 
 export interface InkAnalysisResult {
   coveragePercentage: number; // 0-100
-  bwRate: number;             // ৳/page for B&W
-  colorRate: number;          // ৳/page for Color
-  isDynamic: boolean;         // true হলে base rate থেকে আলাদা
+  bwRate: number; // ৳/page for B&W
+  colorRate: number; // ৳/page for Color
+  isDynamic: boolean; // true হলে base rate থেকে আলাদা
+  inkMessage: string | null;
 }
 
 /**
@@ -62,7 +63,10 @@ function getRatesFromCoverage(
     return { bwRate: baseBw + 2 + t * 1.5, colorRate: baseColor + 2 + t * 1.5 };
   }
   const t = (coverage - 90) / (100 - 90);
-  return { bwRate: baseBw + 3.5 + t * 1.5, colorRate: baseColor + 3.5 + t * 1.5 };
+  return {
+    bwRate: baseBw + 3.5 + t * 1.5,
+    colorRate: baseColor + 3.5 + t * 1.5,
+  };
 }
 
 /**
@@ -70,6 +74,7 @@ function getRatesFromCoverage(
  * এবং সেই অনুযায়ী B&W ও Color উভয়ের dynamic rate রিটার্ন করে।
  * Fail করলে (corrupt PDF, worker error ইত্যাদি) base rate এ fallback করে।
  */
+
 export async function analyzePdfInkCoverage(
   file: File,
   baseBwRate: number,
@@ -91,20 +96,33 @@ export async function analyzePdfInkCoverage(
       canvas.height = viewport.height;
 
       if (ctx) {
-        await page.render({ canvasContext: ctx, viewport, canvas } as never).promise;
+        await page.render({ canvasContext: ctx, viewport, canvas } as never)
+          .promise;
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         totalCoverage += calculateCoverage(imageData);
       }
     }
 
     const avgCoverage = Math.round((totalCoverage / pagesToSample) * 10) / 10;
-    const { bwRate, colorRate } = getRatesFromCoverage(avgCoverage, baseBwRate, baseColorRate);
+    const { bwRate, colorRate } = getRatesFromCoverage(
+      avgCoverage,
+      baseBwRate,
+      baseColorRate,
+    );
 
     return {
       coveragePercentage: avgCoverage,
       bwRate: Math.round(bwRate * 100) / 100,
       colorRate: Math.round(colorRate * 100) / 100,
       isDynamic: avgCoverage > 40,
+      inkMessage:
+        avgCoverage <= 40
+          ? null
+          : avgCoverage <= 75
+            ? "Extra ink, lvl-1"
+            : avgCoverage <= 90
+              ? "High ink, lvl-2"
+              : "Very high ink, lvl-3",
     };
   } catch (err) {
     console.warn("Ink analysis failed, using base rate:", err);
@@ -113,6 +131,7 @@ export async function analyzePdfInkCoverage(
       bwRate: baseBwRate,
       colorRate: baseColorRate,
       isDynamic: false,
+      inkMessage: null,
     };
   }
 }

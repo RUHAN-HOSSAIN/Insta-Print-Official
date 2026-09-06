@@ -19,11 +19,11 @@ const ContactUs = () => {
         </h3>
       </div>
 
-      <div className="font-roboto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 sm:px-10 md:px-20 xl:px-30 pt-20">
+      <div className="font-roboto mx-auto grid w-full max-w-6xl grid-cols-1 items-stretch justify-items-center gap-8 pt-20 sm:grid-cols-2 sm:gap-10 sm:px-4 lg:grid-cols-3 lg:gap-8 lg:px-8">
         {contactData.map((item: ContactItem) => (
           <div
             key={item.id}
-            className="hover:scale-105 transition-transform duration-300 flex flex-col gap-7 sm:px-6 md:p-8 xl:px-10 py-10 md:py-15 rounded-xl bg-white max-w-sm shadow-xl"
+            className="flex h-full min-w-0 w-full max-w-88 flex-col items-center gap-7 rounded-xl bg-white px-[clamp(1.5rem,4vw,2.5rem)] py-[clamp(2.5rem,6vw,3.75rem)] text-center shadow-xl transition-transform duration-300 hover:scale-105"
           >
             <div className="flex items-center justify-center">
               <item.icon
@@ -32,7 +32,7 @@ const ContactUs = () => {
             </div>
 
             <div className="flex flex-col items-center justify-center gap-5 mt-3">
-              <h2 className="text-2xl font-bold">{item.title}</h2>
+              <h2 className="text-center text-2xl font-bold">{item.title}</h2>
 
               <h4 className="text-center text-gray-500 leading-relaxed">
                 {item.description}

@@ -13,7 +13,7 @@ const FAQ = () => {
   };
 
   return (
-    <div className="relative px-7 min-[500px]:px-10 md:px-15 py-15 sm:py-20 md:py-25 lg:py-30  flex items-start justify-center max-md:flex-col gap-20  md:gap-15 lg:gap-20 font-spaceG">
+    <div className="relative px-7 min-[500px]:px-10 md:px-15 lg:px-20 2xl:px-30 py-15 sm:py-20 md:py-25 lg:py-30  flex items-start justify-center max-md:flex-col gap-20  md:gap-15 lg:gap-20 font-spaceG">
       <div
           className="absolute inset-0 -z-5 pointer-events-none opacity-100"
           style={{
