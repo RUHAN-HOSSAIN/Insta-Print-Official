@@ -1,10 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
-import type { AuthStep, SignupSharedState } from "../../components/auth/AuthModal";
+import type {
+  AuthStep,
+  SignupSharedState,
+} from "../../components/auth/AuthModal";
 import { HALLS, type HallId } from "../../constant/halls";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 import mainLogo from "../../assets/logo_main.webp";
 
@@ -31,7 +35,9 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
     setError("");
 
     if (!/^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(password)) {
-      return setError("Password must be at least 6 characters with one letter and one digit.");
+      return setError(
+        "Password must be at least 6 characters with one letter and one digit.",
+      );
     }
     if (password !== confirmPassword) {
       return setError("Passwords do not match.");
@@ -43,6 +49,7 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          user_id: signupData.userId, // নতুন
           roll: Number(signupData.roll),
           email: signupData.email,
           name,
@@ -53,13 +60,17 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? data.message ?? "Signup failed");
-      if (!data.token || !data.user) throw new Error("Invalid response from server");
+      if (!res.ok)
+        throw new Error(data.error ?? data.message ?? "Signup failed");
+      if (!data.token || !data.user)
+        throw new Error("Invalid response from server");
 
       login(data.token, data.user);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to complete signup");
+      setError(
+        err instanceof Error ? err.message : "Unable to complete signup",
+      );
     } finally {
       setBusy(false);
     }

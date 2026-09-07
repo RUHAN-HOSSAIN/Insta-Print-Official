@@ -1,7 +1,11 @@
 import { useState, type FormEvent } from "react";
-import type { AuthStep, SignupSharedState } from "../../components/auth/AuthModal";
+import type {
+  AuthStep,
+  SignupSharedState,
+} from "../../components/auth/AuthModal";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 import mainLogo from "../../assets/logo_main.webp";
 
@@ -9,9 +13,14 @@ type VerifyOtpProps = {
   onClose: () => void;
   onGoTo: (step: AuthStep) => void;
   signupData: SignupSharedState;
+  onSignupDataChange: (data: SignupSharedState) => void; // নতুন prop লাগবে
 };
 
-const VerifyOtp = ({ onGoTo, signupData }: VerifyOtpProps) => {
+const VerifyOtp = ({
+  onGoTo,
+  signupData,
+  onSignupDataChange,
+}: VerifyOtpProps) => {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -37,6 +46,8 @@ const VerifyOtp = ({ onGoTo, signupData }: VerifyOtpProps) => {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? data.message ?? "Invalid OTP");
 
+      // userId backend থেকে পেয়ে save করো
+      onSignupDataChange({ ...signupData, userId: data.user_id });
       onGoTo("profile");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid OTP");
@@ -61,7 +72,8 @@ const VerifyOtp = ({ onGoTo, signupData }: VerifyOtpProps) => {
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? data.message ?? "Failed to resend");
+      if (!res.ok)
+        throw new Error(data.error ?? data.message ?? "Failed to resend");
 
       setMessage("OTP resent successfully.");
     } catch (err) {

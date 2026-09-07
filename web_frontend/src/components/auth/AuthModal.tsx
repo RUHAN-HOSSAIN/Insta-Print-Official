@@ -29,6 +29,7 @@ export type AuthModalProps = {
 export type SignupSharedState = {
   roll: string;
   email: string;
+  userId: string; // নতুন — VerifyOtp থেকে আসবে
 };
 
 // Forgot flow: forgot → forgot-otp → reset-password
@@ -43,8 +44,15 @@ const AuthModal = ({ initialStep = "login", onClose }: AuthModalProps) => {
   const navigate = useNavigate();
   const [step, setStep] = useState<AuthStep>(initialStep);
 
-  const [signupData, setSignupData] = useState<SignupSharedState>({ roll: "", email: "" });
-  const [forgotData, setForgotData] = useState<ForgotSharedState>({ email: "", resetToken: "" });
+  const [signupData, setSignupData] = useState<SignupSharedState>({
+    roll: "",
+    email: "",
+    userId: "",
+  });
+  const [forgotData, setForgotData] = useState<ForgotSharedState>({
+    email: "",
+    resetToken: "",
+  });
 
   const close = () => {
     onClose();
@@ -74,9 +82,7 @@ const AuthModal = ({ initialStep = "login", onClose }: AuthModalProps) => {
         </button>
 
         {/* ── Signup flow ── */}
-        {step === "login" && (
-          <Login onClose={close} onGoTo={goTo} />
-        )}
+        {step === "login" && <Login onClose={close} onGoTo={goTo} />}
         {step === "signup" && (
           <SignUp
             onClose={close}
@@ -86,10 +92,19 @@ const AuthModal = ({ initialStep = "login", onClose }: AuthModalProps) => {
           />
         )}
         {step === "otp" && (
-          <VerifyOtp onClose={close} onGoTo={goTo} signupData={signupData} />
+          <VerifyOtp
+            onClose={close}
+            onGoTo={goTo}
+            signupData={signupData}
+            onSignupDataChange={setSignupData}
+          />
         )}
         {step === "profile" && (
-          <CompleteProfile onClose={close} onGoTo={goTo} signupData={signupData} />
+          <CompleteProfile
+            onClose={close}
+            onGoTo={goTo}
+            signupData={signupData}
+          />
         )}
 
         {/* ── Forgot password flow ── */}
@@ -110,7 +125,11 @@ const AuthModal = ({ initialStep = "login", onClose }: AuthModalProps) => {
           />
         )}
         {step === "reset-password" && (
-          <ResetPassword onClose={close} onGoTo={goTo} forgotData={forgotData} />
+          <ResetPassword
+            onClose={close}
+            onGoTo={goTo}
+            forgotData={forgotData}
+          />
         )}
       </div>
     </div>

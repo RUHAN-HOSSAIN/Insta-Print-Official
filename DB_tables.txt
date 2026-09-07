@@ -124,7 +124,8 @@ truncate table print_jobs, payments restart identity cascade;
 -- user_wallets table
 create table user_wallets (
   user_id uuid primary key references auth.users(id) on delete cascade,
-  balance numeric(8,2) default 0 check (balance >= 0),
+  roll bigint unique,                          -- নতুন যোগ হলো
+  balance numeric(6,2) default 0 check (balance >= 0),
   updated_at timestamptz default now()
 );
 

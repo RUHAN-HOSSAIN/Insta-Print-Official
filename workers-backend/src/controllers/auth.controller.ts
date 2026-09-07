@@ -42,6 +42,7 @@ export async function handleSignupRequestOtp(c: Context<{ Bindings: Env }>) {
 
 // POST /api/auth/signup/verify-otp
 // Body: { email: string, otp: string }
+// POST /api/auth/signup/verify-otp
 export async function handleSignupVerifyOtp(c: Context<{ Bindings: Env }>) {
   try {
     const { email, otp } = await c.req.json<{ email: string; otp: string }>();
@@ -49,7 +50,7 @@ export async function handleSignupVerifyOtp(c: Context<{ Bindings: Env }>) {
     if (!email || !otp) return err(c, "Email and OTP are required.");
 
     const { userId } = await verifySignupOtp(c.env, email, otp);
-    return ok(c, { message: "OTP verified.", userId });
+    return ok(c, { message: "OTP verified.", user_id: userId });
   } catch (error) {
     return err(c, error instanceof Error ? error.message : "Invalid OTP");
   }
@@ -57,10 +58,12 @@ export async function handleSignupVerifyOtp(c: Context<{ Bindings: Env }>) {
 
 // POST /api/auth/signup/complete
 // Body: { roll, email, password, name, gender, preferred_hall_id }
+// POST /api/auth/signup/complete
 export async function handleSignupComplete(c: Context<{ Bindings: Env }>) {
   try {
-    const { roll, email, password, name, gender, preferred_hall_id } =
+    const { user_id, roll, email, password, name, gender, preferred_hall_id } =
       await c.req.json<{
+        user_id: string;
         roll: number;
         email: string;
         password: string;
@@ -69,7 +72,7 @@ export async function handleSignupComplete(c: Context<{ Bindings: Env }>) {
         preferred_hall_id: string;
       }>();
 
-    if (!roll || !email || !password || !name || !gender) {
+    if (!user_id || !roll || !email || !password || !name || !gender) {
       return err(c, "All fields are required.");
     }
     if (!/^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(password)) {
@@ -77,7 +80,7 @@ export async function handleSignupComplete(c: Context<{ Bindings: Env }>) {
     }
 
     const result = await completeSignup(
-      c.env, roll, email, password, name, gender, preferred_hall_id,
+      c.env, user_id, roll, email, password, name, gender, preferred_hall_id,
     );
 
     return ok(c, {
