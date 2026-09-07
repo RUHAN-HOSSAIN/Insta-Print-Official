@@ -63,7 +63,7 @@ const PaymentMethodsPanel = ({
         </fieldset>
       )}
       <h2 className="font-spaceG text-md sm:text-xl font-bold text-blue-600">
-        Pay via (Send Money) <sup className="text-xs text-red-400">*Pay Exact</sup>
+        Pay via (Send Money) <sup className="text-[10px] sm:text-xs text-red-400">*Pay Exact</sup>
       </h2>
       <div>
         {paymentMethods.map((method) => (

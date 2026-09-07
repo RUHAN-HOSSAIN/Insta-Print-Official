@@ -17,7 +17,6 @@ import CancelPolicy from "../pages/legal/CancelPolicy";
 // Auth pages
 
 // Dashboard pages
-import Dashboard from "../pages/dashboard/Dashboard";
 import Profile from "../pages/dashboard/Profile";
 import TopUp from "../pages/dashboard/TopUp";
 
@@ -55,7 +54,6 @@ const AppRoutes = () => {
 
         {/* Protected */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/profile" element={<Profile />} />
           <Route path="/dashboard/topup" element={<TopUp />} />
         </Route>

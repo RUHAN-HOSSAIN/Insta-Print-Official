@@ -8,7 +8,7 @@ import AboutUs from "./home/WhyInstaPrint";
 
 const Home = () => {
   const sectionOffsetStyle = {
-    scrollMarginTop: "calc(var(--header-height, 72px) + 8px)",
+    scrollMarginTop: "calc(var(--header-height, 72px) + var(--header-offset, 0px))",
   };
 
   return (

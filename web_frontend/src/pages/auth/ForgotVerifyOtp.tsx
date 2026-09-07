@@ -1,17 +1,18 @@
 import { useState, type FormEvent } from "react";
-import type { AuthStep, SignupSharedState } from "../../components/auth/AuthModal";
+import type { AuthStep, ForgotSharedState } from "../../components/auth/AuthModal";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 import mainLogo from "../../assets/logo_main.webp";
 
-type VerifyOtpProps = {
+type ForgotVerifyOtpProps = {
   onClose: () => void;
   onGoTo: (step: AuthStep) => void;
-  signupData: SignupSharedState;
+  forgotData: ForgotSharedState;
+  onForgotDataChange: (data: ForgotSharedState) => void;
 };
 
-const VerifyOtp = ({ onGoTo, signupData }: VerifyOtpProps) => {
+const ForgotVerifyOtp = ({ onGoTo, forgotData, onForgotDataChange }: ForgotVerifyOtpProps) => {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -24,20 +25,17 @@ const VerifyOtp = ({ onGoTo, signupData }: VerifyOtpProps) => {
     setError("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/signup/verify-otp`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          roll: Number(signupData.roll),
-          email: signupData.email,
-          otp,
-        }),
+        body: JSON.stringify({ email: forgotData.email, otp }),
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? data.message ?? "Invalid OTP");
+      if (!res.ok) throw new Error(data.error ?? "Invalid OTP");
 
-      onGoTo("profile");
+      onForgotDataChange({ ...forgotData, resetToken: data.reset_token });
+      onGoTo("reset-password");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid OTP");
     } finally {
@@ -51,17 +49,14 @@ const VerifyOtp = ({ onGoTo, signupData }: VerifyOtpProps) => {
     setMessage("");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/signup/request-otp`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password/request-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          roll: Number(signupData.roll),
-          email: signupData.email,
-        }),
+        body: JSON.stringify({ email: forgotData.email }),
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? data.message ?? "Failed to resend");
+      if (!res.ok) throw new Error(data.error ?? "Failed to resend");
 
       setMessage("OTP resent successfully.");
     } catch (err) {
@@ -75,10 +70,10 @@ const VerifyOtp = ({ onGoTo, signupData }: VerifyOtpProps) => {
     <div className="font-roboto">
       <img src={mainLogo} className="mx-auto h-14 w-14 my-2" />
       <h1 className="text-slate-900 text-center text-xl font-semibold">
-        Verify your email
+        Verify OTP
       </h1>
       <p className="text-slate-700 text-center mt-2 text-sm font-light">
-        Enter the OTP sent to {signupData.email}.
+        Enter the OTP sent to {forgotData.email}.
       </p>
 
       <form className="space-y-6 mt-7" onSubmit={handleSubmit} noValidate>
@@ -132,10 +127,10 @@ const VerifyOtp = ({ onGoTo, signupData }: VerifyOtpProps) => {
 
           <button
             type="button"
-            onClick={() => onGoTo("login")}
+            onClick={() => onGoTo("forgot")}
             className="text-sm font-medium text-blue-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
           >
-            Back to log in
+            Back
           </button>
         </div>
       </form>
@@ -143,4 +138,4 @@ const VerifyOtp = ({ onGoTo, signupData }: VerifyOtpProps) => {
   );
 };
 
-export default VerifyOtp;
+export default ForgotVerifyOtp;

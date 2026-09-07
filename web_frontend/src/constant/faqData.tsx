@@ -158,14 +158,4 @@ export const faqData = [
       </>
     ),
   },
-  {
-    question: "Can someone print this for me?",
-    answer: (
-      <>
-        Yes! That's exactly what Insta Print does. Upload your document, choose
-        your options, and place your order. We will{" "}
-        <b>print it for you</b>. <i>And then collect it at your convenience.</i>
-      </>
-    ),
-  },
 ];

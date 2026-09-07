@@ -1,17 +1,15 @@
-import {
-  createContext,
-  useState,
-  type ReactNode,  // ← fix #1: type-only import
-} from "react";
+import { createContext, useState, type ReactNode } from "react";
 
+// ─── User type ────────────────────────────────────────────────────────────────
+// Backend এর UserMetadata + extra fields
 export interface User {
+  id: string;
   roll: number;
   name: string;
-  ruet_stdn_mail: string;
+  email: string;               // ruet_stdn_mail
   gender: "male" | "female";
   wallet_balance: number;
-  preferreable_hall_id: string | null;
-  account_creted_date: string;
+  preferred_hall_id: string | null;
 }
 
 interface AuthContextType {
@@ -25,10 +23,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const AUTH_SESSION_MS = 24 * 60 * 60 * 1000;
+const AUTH_SESSION_MS = 24 * 60 * 60 * 1000; // 24 hour
 
-// ── fix #2: useEffect বাদ, সরাসরি localStorage পড়ো ──
-const getInitialToken = () => {
+// ─── Initial state (localStorage থেকে) ───────────────────────────────────────
+
+const getInitialToken = (): string | null => {
   const expiresAt = Number(localStorage.getItem("auth_expires_at"));
   if (!expiresAt || expiresAt <= Date.now()) {
     localStorage.removeItem("auth_token");
@@ -38,16 +37,19 @@ const getInitialToken = () => {
   }
   return localStorage.getItem("auth_token");
 };
+
 const getInitialUser = (): User | null => {
   const expiresAt = Number(localStorage.getItem("auth_expires_at"));
   if (!expiresAt || expiresAt <= Date.now()) return null;
   try {
     const saved = localStorage.getItem("auth_user");
-    return saved ? JSON.parse(saved) : null;
+    return saved ? (JSON.parse(saved) as User) : null;
   } catch {
     return null;
   }
 };
+
+// ─── Provider ─────────────────────────────────────────────────────────────────
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(getInitialUser);
@@ -77,12 +79,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, token, loading: false, login, logout, updateUser }}
-    >
+    <AuthContext.Provider value={{ user, token, loading: false, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export { AuthContext }; // ← fix #3: useAuth আলাদা file এ নিয়ে যাবো
+export { AuthContext };
