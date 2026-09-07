@@ -132,3 +132,8 @@ create table user_wallets (
 -- Row Level Security
 alter table user_wallets enable row level security;
 create policy "service role only" on user_wallets using (false);
+
+
+
+
+changing here
