@@ -26,7 +26,7 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
 
   const validate = (): string | null => {
     if (!IDENTIFIER_REGEX.test(identifier.trim())) {
-      return "Enter a valid 7-digit roll (e.g. 2303130) or valid gmail address!";
+      return "Enter a valid 7-digit roll (e.g. 2303130) or valid email address!";
     }
     if (password.length < 6) {
       return "Password must be at least 6 characters";
@@ -93,7 +93,7 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
             inputMode="text"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            placeholder="Enter roll or student email"
+            placeholder="Enter roll or email address"
             pattern="^(\d{7}|[^\s@]+@[^\s@]+\.[^\s@]+)$"
             title="7-digit roll or valid email address"
             className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"

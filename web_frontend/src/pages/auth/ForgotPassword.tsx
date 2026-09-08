@@ -55,7 +55,7 @@ const ForgotPassword = ({ onGoTo, forgotData, onForgotDataChange }: ForgotPasswo
             htmlFor="email"
             className="mb-2 text-slate-900 font-medium inline-block"
           >
-            RUET student email
+            Email Address
           </label>
           <input
             id="email"
@@ -65,7 +65,7 @@ const ForgotPassword = ({ onGoTo, forgotData, onForgotDataChange }: ForgotPasswo
             onChange={(e) =>
               onForgotDataChange({ ...forgotData, email: e.target.value })
             }
-            placeholder="_roll_@student.ruet.ac.bd"
+            placeholder="Enter your email address"
             className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
           />
         </div>

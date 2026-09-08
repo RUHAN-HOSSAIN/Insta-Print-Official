@@ -93,7 +93,7 @@ const SignUp = ({ onGoTo, signupData, onSignupDataChange }: SignUpProps) => {
             htmlFor="email"
             className="mb-2 text-slate-900 font-medium inline-block"
           >
-            RUET student email
+            Email Address
           </label>
           <input
             id="email"
@@ -103,7 +103,7 @@ const SignUp = ({ onGoTo, signupData, onSignupDataChange }: SignUpProps) => {
             onChange={(e) =>
               onSignupDataChange({ ...signupData, email: e.target.value })
             }
-            placeholder="your@gmail.com"
+            placeholder="Enter your email address"
             className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
           />
         </div>
