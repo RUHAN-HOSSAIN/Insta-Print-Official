@@ -102,7 +102,6 @@ const AuthModal = ({ initialStep = "login", onClose }: AuthModalProps) => {
         {step === "profile" && (
           <CompleteProfile
             onClose={close}
-            onGoTo={goTo}
             signupData={signupData}
           />
         )}

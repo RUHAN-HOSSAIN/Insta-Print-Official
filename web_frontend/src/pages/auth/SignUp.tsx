@@ -1,7 +1,11 @@
 import { useState, type FormEvent } from "react";
-import type { AuthStep, SignupSharedState } from "../../components/auth/AuthModal";
+import type {
+  AuthStep,
+  SignupSharedState,
+} from "../../components/auth/AuthModal";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 import mainLogo from "../../assets/logo_main.webp";
 
@@ -25,8 +29,8 @@ const SignUp = ({ onGoTo, signupData, onSignupDataChange }: SignUpProps) => {
     if (!/^\d{7}$/.test(roll)) {
       return setError("Student ID must be exactly 7 digits.");
     }
-    if (!new RegExp(`^${roll}@student\\.ruet\\.ac\\.bd$`, "i").test(email)) {
-      return setError(`Email must be ${roll}@student.ruet.ac.bd`);
+    if (!email.trim() || !email.includes("@")) {
+      return setError("Please enter a valid email address.");
     }
 
     setBusy(true);
@@ -38,7 +42,8 @@ const SignUp = ({ onGoTo, signupData, onSignupDataChange }: SignUpProps) => {
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? data.message ?? "Failed to send OTP");
+      if (!res.ok)
+        throw new Error(data.error ?? data.message ?? "Failed to send OTP");
 
       onGoTo("otp");
     } catch (err) {
@@ -98,7 +103,7 @@ const SignUp = ({ onGoTo, signupData, onSignupDataChange }: SignUpProps) => {
             onChange={(e) =>
               onSignupDataChange({ ...signupData, email: e.target.value })
             }
-            placeholder="_roll_@student.ruet.ac.bd"
+            placeholder="your@gmail.com"
             className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
           />
         </div>

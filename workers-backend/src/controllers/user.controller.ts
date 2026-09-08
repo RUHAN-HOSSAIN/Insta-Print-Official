@@ -91,15 +91,16 @@ export async function handleUpdateHall(c: Context<{ Bindings: Env }>) {
 export async function handleTopUp(c: Context<{ Bindings: Env }>) {
   try {
     const { userId } = await verifyToken(c.env, c.req.header("Authorization"));
-    const { amount, txn_id } = await c.req.json<{ amount: number; txn_id: string }>();
+    const { txn_id } = await c.req.json<{ txn_id: string }>();
 
-    if (!amount || amount <= 0) return err(c, "Enter a valid amount.");
     if (!txn_id?.trim()) return err(c, "Transaction ID is required.");
 
-    await createTopUpRequest(c.env, userId, amount, txn_id);
-    const newBalance = await getWalletBalance(c.env, userId);
+    const newBalance = await createTopUpRequest(c.env, userId, txn_id);
 
-    return ok(c, { message: "Wallet topped up successfully.", wallet_balance: newBalance });
+    return ok(c, {
+      message: "Wallet topped up successfully.",
+      wallet_balance: newBalance,
+    });
   } catch (error) {
     return err(c, error instanceof Error ? error.message : "Top-up failed");
   }

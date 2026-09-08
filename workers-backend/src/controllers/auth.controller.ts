@@ -10,13 +10,13 @@ import {
   resetPassword,
 } from "../services/auth.service";
 
-const corsHeaders = { "Access-Control-Allow-Origin": "*" };
+const ok = (c: Context, data: unknown) => c.json(data, 200);
 
-const ok = (c: Context, data: unknown) =>
-  c.json(data, 200);
-
-const err = (c: Context, message: string, status: 400 | 401 | 404 | 409 | 500 = 400) =>
-  c.json({ error: message }, status);
+const err = (
+  c: Context,
+  message: string,
+  status: 400 | 401 | 404 | 409 | 500 = 400,
+) => c.json({ error: message }, status);
 
 // ─── Signup ───────────────────────────────────────────────────────────────────
 
@@ -29,14 +29,17 @@ export async function handleSignupRequestOtp(c: Context<{ Bindings: Env }>) {
     if (!roll || !/^\d{7}$/.test(String(roll))) {
       return err(c, "Student ID must be exactly 7 digits.");
     }
-    if (!new RegExp(`^${roll}@student\\.ruet\\.ac\\.bd$`, "i").test(email)) {
-      return err(c, `Email must be ${roll}@student.ruet.ac.bd`);
+    if (!email || !email.includes("@")) {
+      return err(c, "Please enter a valid email address.");
     }
 
     await requestSignupOtp(c.env, roll, email);
     return ok(c, { message: `OTP sent to ${email}` });
   } catch (error) {
-    return err(c, error instanceof Error ? error.message : "Unable to send OTP");
+    return err(
+      c,
+      error instanceof Error ? error.message : "Unable to send OTP",
+    );
   }
 }
 
@@ -76,11 +79,21 @@ export async function handleSignupComplete(c: Context<{ Bindings: Env }>) {
       return err(c, "All fields are required.");
     }
     if (!/^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(password)) {
-      return err(c, "Password must be at least 6 characters with one letter and one digit.");
+      return err(
+        c,
+        "Password must be at least 6 characters with one letter and one digit.",
+      );
     }
 
     const result = await completeSignup(
-      c.env, user_id, roll, email, password, name, gender, preferred_hall_id,
+      c.env,
+      user_id,
+      roll,
+      email,
+      password,
+      name,
+      gender,
+      preferred_hall_id,
     );
 
     return ok(c, {
@@ -99,8 +112,10 @@ export async function handleSignupComplete(c: Context<{ Bindings: Env }>) {
 // Body: { identifier: string (roll or email), password: string }
 export async function handleLogin(c: Context<{ Bindings: Env }>) {
   try {
-    const { identifier, password } =
-      await c.req.json<{ identifier: string; password: string }>();
+    const { identifier, password } = await c.req.json<{
+      identifier: string;
+      password: string;
+    }>();
 
     if (!identifier || !password) {
       return err(c, "Student ID/email and password are required.");
@@ -128,11 +143,11 @@ export async function handleForgotRequestOtp(c: Context<{ Bindings: Env }>) {
     if (!email) return err(c, "Email is required.");
 
     await requestForgotOtp(c.env, email);
-
-    // Security: account exist করুক বা না করুক same message দাও
-    return ok(c, { message: "If this account exists, an OTP has been sent." });
-  } catch {
-    return ok(c, { message: "If this account exists, an OTP has been sent." });
+    return ok(c, { message: "OTP sent to your email." });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Request failed";
+    const status = message.includes("No account") ? 404 : 400;
+    return err(c, message, status as 400 | 404);
   }
 }
 
@@ -156,17 +171,26 @@ export async function handleForgotVerifyOtp(c: Context<{ Bindings: Env }>) {
 // Body: { reset_token: string, password: string }
 export async function handleResetPassword(c: Context<{ Bindings: Env }>) {
   try {
-    const { reset_token, password } =
-      await c.req.json<{ reset_token: string; password: string }>();
+    const { reset_token, password } = await c.req.json<{
+      reset_token: string;
+      password: string;
+    }>();
 
-    if (!reset_token || !password) return err(c, "Token and password are required.");
+    if (!reset_token || !password)
+      return err(c, "Token and password are required.");
     if (!/^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(password)) {
-      return err(c, "Password must be at least 6 characters with one letter and one digit.");
+      return err(
+        c,
+        "Password must be at least 6 characters with one letter and one digit.",
+      );
     }
 
     await resetPassword(c.env, reset_token, password);
     return ok(c, { message: "Password reset successful." });
   } catch (error) {
-    return err(c, error instanceof Error ? error.message : "Password reset failed");
+    return err(
+      c,
+      error instanceof Error ? error.message : "Password reset failed",
+    );
   }
 }

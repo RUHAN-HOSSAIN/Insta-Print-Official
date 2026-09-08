@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useAuth } from "../../context/useAuth";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -21,12 +22,6 @@ const TopUp = () => {
     setError("");
     setMessage("");
 
-    const parsedAmount = parseFloat(amount);
-
-    // Client-side validation
-    if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      return setError("Enter a valid amount.");
-    }
     if (!transactionId.trim()) {
       return setError("Transaction ID is required.");
     }
@@ -39,24 +34,20 @@ const TopUp = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          amount: parsedAmount,
-          txn_id: transactionId.trim(),
-        }),
-        // Server side: admin approval হলে wallet_balance বাড়াবে
-        // অথবা auto verify করলে এখানেই balance update আসবে
+        body: JSON.stringify({ txn_id: transactionId.trim() }),
+        // amount আর পাঠাচ্ছি না — mfs_transactions থেকে আসবে
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? data.message ?? "Top-up failed");
+      if (!res.ok) throw new Error(data.error ?? "Top-up failed");
 
-      // Server যদি updated balance return করে
       if (typeof data.wallet_balance === "number") {
         updateUser({ wallet_balance: data.wallet_balance });
       }
 
-      setMessage("Top-up request submitted successfully.");
-      setAmount("");
+      setMessage(
+        `Top-up successful! New balance: ৳${data.wallet_balance?.toFixed(2) ?? ""}`,
+      );
       setTransactionId("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to process top-up");

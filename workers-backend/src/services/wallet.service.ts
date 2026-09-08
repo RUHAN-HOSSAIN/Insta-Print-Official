@@ -1,7 +1,7 @@
+// services/wallet.service.ts
 import { Env } from "../types";
 import { getSupabaseAdmin } from "./auth.service";
-
-// ─── Balance read ─────────────────────────────────────────────────────────────
+import { findUnusedPayment, markPaymentUsed } from "./payment.service";
 
 export async function getWalletBalance(env: Env, userId: string): Promise<number> {
   const admin = getSupabaseAdmin(env);
@@ -16,9 +16,10 @@ export async function getWalletBalance(env: Env, userId: string): Promise<number
   return Number(data.balance);
 }
 
-// ─── Balance deduct (print এ use) ─────────────────────────────────────────────
 
-// Atomic deduction — balance কম থাকলে error throw করে
+
+
+// Atomic deduction — Postgres function দিয়ে race condition safe
 export async function deductWalletBalance(
   env: Env,
   userId: string,
@@ -26,62 +27,34 @@ export async function deductWalletBalance(
 ): Promise<number> {
   const admin = getSupabaseAdmin(env);
 
-  // Current balance check
-  const current = await getWalletBalance(env, userId);
-  if (current < amount) {
-    throw new Error(`Insufficient wallet balance. Available: ৳${current.toFixed(2)}`);
-  }
+  const { data, error } = await admin.rpc("deduct_wallet_balance", {
+    p_user_id: userId,
+    p_amount: amount,
+  });
 
-  const newBalance = Number((current - amount).toFixed(2));
-
-  const { error } = await admin
-    .from("user_wallets")
-    .update({ balance: newBalance })
-    .eq("user_id", userId);
-
-  if (error) throw new Error("Unable to deduct wallet balance");
-  return newBalance;
+  if (error) throw new Error(error.message);
+  return Number(data);
 }
 
-// ─── Top-up request ───────────────────────────────────────────────────────────
-
-// Top-up request store করো (admin approve করলে balance বাড়বে)
+// Top-up — mfs_transactions verify করে balance বাড়াও
 export async function createTopUpRequest(
   env: Env,
   userId: string,
-  amount: number,
   txnId: string,
-): Promise<void> {
+): Promise<number> {
   const admin = getSupabaseAdmin(env);
 
-  // Payment table এ txn_id check করো — already used কিনা
-  const { data: payment, error: paymentError } = await admin
-    .from("payments")
-    .select("si_no, amount, status")
-    .eq("txn_id", txnId.trim())
-    .eq("status", "not_used")
-    .maybeSingle();
+  const payment = await findUnusedPayment(env, txnId);
 
-  if (paymentError) throw new Error("Unable to verify payment");
-  if (!payment) throw new Error("Payment not found or already used");
-  if (Number(payment.amount) < amount) throw new Error("Payment amount is less than requested top-up");
+  // Atomic add — race condition safe
+  const { data: newBalance, error } = await admin.rpc("add_wallet_balance", {
+    p_user_id: userId,
+    p_amount: Number(payment.amount),
+  });
 
-  // Wallet balance বাড়াও
-  const current = await getWalletBalance(env, userId);
-  const newBalance = Number((current + Number(payment.amount)).toFixed(2));
+  if (error) throw new Error(error.message);
 
-  const { error: walletError } = await admin
-    .from("user_wallets")
-    .update({ balance: newBalance })
-    .eq("user_id", userId);
+  await markPaymentUsed(env, payment.id, "top_up");
 
-  if (walletError) throw new Error("Unable to update wallet balance");
-
-  // Payment mark as used
-  const { error: paymentUpdateError } = await admin
-    .from("payments")
-    .update({ status: "used", use_for: "top_up" })
-    .eq("si_no", payment.si_no);
-
-  if (paymentUpdateError) throw new Error("Unable to mark payment as used");
+  return Number(newBalance);
 }

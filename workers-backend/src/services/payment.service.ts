@@ -1,51 +1,73 @@
+// services/payment.service.ts
 import { Env } from "../types";
-import { getSupabase } from "./supabase.service";
+import { getSupabaseAdmin } from "./auth.service";
 
-export interface PaymentRecord {
-  si_no: number;
-  txn_id: string;
-  via: string;
-  sender_number: string;
+export interface MfsTransaction {
+  id: string;
+  provider: string;
+  transaction_type: string;
   amount: number;
-  status: "not_used" | "used";
-  use_for: "direct_print" | "top_up" | null;
-  print_job_si_no: number | null;
+  trx_id: string;
+  counterparty_identifier: string;
+  status: string;
+  use_for: string | null;
 }
+
+// bKash ও Nagad দুইটাই allow — provider check এখানে নেই intentionally
+// transaction_type টা যা আসে সেটাই match করো — "receiveMoney" (bKash SMS parser এর format)
+const VALID_RECEIVE_TYPES = ["receiveMoney", "Receive Money", "receive_money"];
 
 export async function findUnusedPayment(
   env: Env,
   txnId: string,
-): Promise<PaymentRecord> {
-  const normalizedTxnId = txnId.trim();
-  if (!normalizedTxnId) throw new Error("Payment transaction ID is required");
+): Promise<MfsTransaction> {
+  const admin = getSupabaseAdmin(env);
 
-  const { data, error } = await getSupabase(env)
-    .from("payments")
-    .select("si_no, txn_id, via, sender_number, amount, status, use_for, print_job_si_no")
-    .eq("txn_id", normalizedTxnId)
+  const { data, error } = await admin
+    .from("mfs_transactions")
+    .select("id, provider, transaction_type, amount, trx_id, counterparty_identifier, status, use_for")
+    .eq("trx_id", txnId.trim())
     .eq("status", "not_used")
     .maybeSingle();
 
   if (error) throw new Error("Unable to verify payment");
   if (!data) throw new Error("Payment not found or already used");
-  return data as PaymentRecord;
+
+  // transaction_type check — case insensitive, multiple format support
+  if (!VALID_RECEIVE_TYPES.includes(data.transaction_type)) {
+    throw new Error("Invalid transaction type. Only received payments are accepted.");
+  }
+
+  return data as MfsTransaction;
 }
 
-export function verifyPaymentAmount(
-  paymentAmount: number,
-  calculatedAmount: number,
-): boolean {
-  return Number.isFinite(calculatedAmount) && calculatedAmount > 0 && paymentAmount >= calculatedAmount;
+export async function markPaymentUsed(
+  env: Env,
+  mfsId: string,
+  useFor: "direct_print" | "top_up",
+): Promise<void> {
+  const admin = getSupabaseAdmin(env);
+
+  const { error } = await admin
+    .from("mfs_transactions")
+    .update({ status: "used", use_for: useFor })
+    .eq("id", mfsId)
+    .eq("status", "not_used"); // race condition protection
+
+  if (error) throw new Error("Unable to mark payment as used");
+}
+
+// amount যথেষ্ট কিনা — simple check
+export function verifyPaymentAmount(paid: number, required: number): boolean {
+  return Number(paid) >= required;
 }
 
 export function getPaymentComment(
-  paymentAmount: number,
-  calculatedAmount: number,
+  paid: number,
+  calculated: number,
 ): string | null {
-  const paymentCents = Math.round(paymentAmount * 100);
-  const calculatedCents = Math.round(calculatedAmount * 100);
-
-  if (paymentCents === calculatedCents) return null;
-  if (paymentCents < calculatedCents) return `Less: ${paymentAmount.toFixed(2)}`;
-  return `Extra: ${((paymentCents - calculatedCents) / 100).toFixed(2)}`;
+  const diff = Number(paid) - calculated;
+  if (diff > 0) return `Overpaid by ৳${diff.toFixed(2)}`;
+  if (diff < 0) return `Short by ৳${Math.abs(diff).toFixed(2)}`;
+  return null;
 }

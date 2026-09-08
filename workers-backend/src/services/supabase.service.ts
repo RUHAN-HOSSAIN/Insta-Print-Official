@@ -1,51 +1,47 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { Env, TokenRow } from "../types";
 import { EPSON_AUTH_URL } from "../config/constants";
+import { findUnusedPayment, markPaymentUsed, getPaymentComment } from "./payment.service";
+import { getSupabaseAdmin } from "./auth.service";
 
 export interface PrintJobInput {
   hallId: string;
   loggedUser: boolean;
-  paymentMethod: "direct" | "wallet";
-  txnId: string;
+  txnId?: string;
   amountCalculated: number;
   files: unknown[];
   totalFiles: number;
   totalPagePrint: number;
-  comments?: string | null;
 }
 
 export function getSupabase(env: Env): SupabaseClient {
   return createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
 }
 
+// Direct payment — mfs_transactions verify করে print job বানাও
 export async function createPrintJobFromPayment(
   env: Env,
   input: PrintJobInput,
 ): Promise<{ si_no: number; amount_paid: number; sender_number: string | null }> {
-  const supabase = getSupabase(env);
-  const { data: payment, error: paymentError } = await supabase
-    .from("payments")
-    .select("si_no, txn_id, amount, sender_number, status")
-    .eq("txn_id", input.txnId.trim())
-    .eq("status", "not_used")
-    .maybeSingle();
+  const admin = getSupabaseAdmin(env);
 
-  if (paymentError) throw new Error("Unable to verify payment");
-  if (!payment) throw new Error("Payment not found or already used");
-  const { data: job, error: jobError } = await supabase
+  const payment = await findUnusedPayment(env, input.txnId!);
+  const paymentComment = getPaymentComment(Number(payment.amount), input.amountCalculated);
+
+  const { data: job, error: jobError } = await admin
     .from("print_jobs")
     .insert({
       hall_id: input.hallId,
       logged_user: input.loggedUser,
-      payment_method: input.paymentMethod,
-      txn_id: payment.txn_id,
-      amount_paid: payment.amount,
-      sender_number: payment.sender_number,
+      payment_method: "direct",
+      txn_id: payment.trx_id,
+      amount_paid: Number(payment.amount),
+      sender_number: payment.counterparty_identifier,
       amount_calculated: input.amountCalculated,
       files: input.files,
       total_files: input.totalFiles,
       total_page_print: input.totalPagePrint,
-      comments: input.comments ?? null,
+      comments: paymentComment ?? null,
       status: false,
     })
     .select("si_no")
@@ -53,22 +49,52 @@ export async function createPrintJobFromPayment(
 
   if (jobError || !job) throw new Error("Unable to create print job");
 
-  const { error: paymentUpdateError } = await supabase
-    .from("payments")
-    .update({
-      status: "used",
-      use_for: "direct_print",
-      print_job_si_no: job.si_no,
-    })
-    .eq("si_no", payment.si_no)
-    .eq("status", "not_used");
+  await markPaymentUsed(env, payment.id, "direct_print");
 
-  if (paymentUpdateError) throw new Error("Unable to mark payment as used");
   return {
     si_no: job.si_no,
     amount_paid: Number(payment.amount),
-    sender_number: payment.sender_number,
+    sender_number: payment.counterparty_identifier,
   };
+}
+
+// Wallet payment — balance কেটে print job বানাও
+export async function createWalletPrintJob(
+  env: Env,
+  input: PrintJobInput,
+  userId: string,
+): Promise<{ si_no: number }> {
+  const admin = getSupabaseAdmin(env);
+
+  // Atomic deduction — Postgres function, race condition safe
+  const { error: rpcError } = await admin.rpc("deduct_wallet_balance", {
+    p_user_id: userId,
+    p_amount: input.amountCalculated,
+  });
+  if (rpcError) throw new Error(rpcError.message);
+
+  const { data: job, error: jobError } = await admin
+    .from("print_jobs")
+    .insert({
+      hall_id: input.hallId,
+      logged_user: true,
+      payment_method: "wallet",
+      txn_id: null,
+      amount_paid: input.amountCalculated,
+      sender_number: null,
+      amount_calculated: input.amountCalculated,
+      files: input.files,
+      total_files: input.totalFiles,
+      total_page_print: input.totalPagePrint,
+      comments: null,
+      status: false,
+    })
+    .select("si_no")
+    .single();
+
+  if (jobError || !job) throw new Error("Unable to create print job");
+
+  return { si_no: job.si_no };
 }
 
 export async function updatePrintJobStatus(
@@ -78,7 +104,7 @@ export async function updatePrintJobStatus(
   jobIds: string[],
   comments?: string,
 ): Promise<void> {
-  const { error } = await getSupabase(env)
+  const { error } = await getSupabaseAdmin(env)
     .from("print_jobs")
     .update({ status, job_ids: jobIds, comments: comments ?? null })
     .eq("si_no", jobSiNo);
@@ -86,9 +112,8 @@ export async function updatePrintJobStatus(
   if (error) throw new Error("Unable to update print job status");
 }
 
-// tokenRow দিয়ে নির্দিষ্ট hall এর token আনো
 export async function getTokens(env: Env, tokenRow: number): Promise<TokenRow> {
-  const { data, error } = await getSupabase(env)
+  const { data, error } = await getSupabaseAdmin(env)
     .from("epson_tokens")
     .select("access_token, refresh_token")
     .eq("id", tokenRow)
@@ -98,14 +123,13 @@ export async function getTokens(env: Env, tokenRow: number): Promise<TokenRow> {
   return data as TokenRow;
 }
 
-// নির্দিষ্ট hall এর token save করো
 export async function saveTokens(
   env: Env,
   tokenRow: number,
   accessToken: string,
-  refreshToken: string
+  refreshToken: string,
 ): Promise<void> {
-  await getSupabase(env)
+  await getSupabaseAdmin(env)
     .from("epson_tokens")
     .update({
       access_token: accessToken,
@@ -115,11 +139,7 @@ export async function saveTokens(
     .eq("id", tokenRow);
 }
 
-// নির্দিষ্ট hall এর token refresh করো
-export async function refreshAccessToken(
-  env: Env,
-  tokenRow: number
-): Promise<string> {
+export async function refreshAccessToken(env: Env, tokenRow: number): Promise<string> {
   const { refresh_token } = await getTokens(env, tokenRow);
   const credentials = btoa(`${env.EPSON_CLIENT_ID}:${env.EPSON_SECRET}`);
 

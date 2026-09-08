@@ -31,15 +31,20 @@ const app = new Hono<{ Bindings: Env }>();
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 
-app.use(
-  "*",
-  cors({
-    origin: (origin, c) => {
-      const allowedOrigins = [c.env.FRONTEND_URL, "http://localhost:5173"];
-      return allowedOrigins.includes(origin) ? origin : "";
-    },
+app.use("*", cors({
+    origin: (origin, c) => origin === c.env.FRONTEND_URL ? origin : "",
   }),
 );
+
+// app.use(
+//   "*",
+//   cors({
+//     origin: (origin, c) => {
+//       const allowedOrigins = [c.env.FRONTEND_URL, "http://localhost:5173"];
+//       return allowedOrigins.includes(origin) ? origin : "";
+//     },
+//   }),
+// );
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 
@@ -49,7 +54,7 @@ app.get("/test-email", async (c) => {
   const supabase = getSupabase(c.env);
 
   const { data, error } = await supabase.auth.signInWithOtp({
-    email: "ruhanhossain795@gmail.com",
+    email: "ruhanhossain207@gmail.com",
   });
 
   if (error) {
@@ -58,8 +63,6 @@ app.get("/test-email", async (c) => {
 
   return c.json({ success: true, message: "OTP sent successfully", data });
 });
-
-
 
 // ─── Existing routes (unchanged) ─────────────────────────────────────────────
 
@@ -74,23 +77,23 @@ app.post("/print", (c) => submitPrintJob(c.req.raw, c.env));
 
 // Signup flow
 app.post("/api/auth/signup/request-otp", handleSignupRequestOtp);
-app.post("/api/auth/signup/verify-otp",  handleSignupVerifyOtp);
-app.post("/api/auth/signup/complete",    handleSignupComplete);
+app.post("/api/auth/signup/verify-otp", handleSignupVerifyOtp);
+app.post("/api/auth/signup/complete", handleSignupComplete);
 
 // Login
 app.post("/api/auth/login", handleLogin);
 
 // Forgot password flow
 app.post("/api/auth/forgot-password/request-otp", handleForgotRequestOtp);
-app.post("/api/auth/forgot-password/verify-otp",  handleForgotVerifyOtp);
-app.post("/api/auth/forgot-password/reset",        handleResetPassword);
+app.post("/api/auth/forgot-password/verify-otp", handleForgotVerifyOtp);
+app.post("/api/auth/forgot-password/reset", handleResetPassword);
 
 // ─── User (protected) routes ──────────────────────────────────────────────────
 
-app.get("/api/user/me",               handleGetMe);
-app.post("/api/user/update-name",     handleUpdateName);
+app.get("/api/user/me", handleGetMe);
+app.post("/api/user/update-name", handleUpdateName);
 app.post("/api/user/update-password", handleUpdatePassword);
-app.post("/api/user/update-hall",     handleUpdateHall);
-app.post("/api/user/topup",           handleTopUp);
+app.post("/api/user/update-hall", handleUpdateHall);
+app.post("/api/user/topup", handleTopUp);
 
 export default app;

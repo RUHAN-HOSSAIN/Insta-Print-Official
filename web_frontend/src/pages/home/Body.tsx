@@ -4,7 +4,10 @@ import { submitPrintJob } from "../../api/printApi";
 import FileUploadBox from "../../components/print/FileUploadBox";
 import SelectedFileCard from "../../components/print/SelectedFileCard";
 import PaymentMethodsPanel from "../../components/print/PaymentMethodsPanel";
-import { CoverLetterDetails, CoverLetterToggle, } from "../../components/print/CoverLetterFields";
+import {
+  CoverLetterDetails,
+  CoverLetterToggle,
+} from "../../components/print/CoverLetterFields";
 import PrintSummary from "../../components/print/PrintSummary";
 import PrinterStatus from "./PrinterStatus";
 import { createCoverLetterPdf } from "../../utils/createCoverLetterPdf";
@@ -17,7 +20,7 @@ import mainLogo from "../../assets/logo_main.webp";
 
 const Body = () => {
   const printFiles = usePrintFiles();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const loggedUser = Boolean(user);
   const [isDragging, setIsDragging] = useState(false);
   const [coverLetterEnabled, setCoverLetterEnabled] = useState(false);
@@ -134,7 +137,8 @@ const Body = () => {
         (sum, item) => sum + item.pages * item.copies,
         0,
       );
-      if (amount <= 0) return setFormError("Calculated amount must be greater than zero.");
+      if (amount <= 0)
+        return setFormError("Calculated amount must be greater than zero.");
 
       const result = await submitPrintJob(
         {
@@ -148,6 +152,7 @@ const Body = () => {
           logged_user: loggedUser,
         },
         files,
+        token, // ← যোগ করো
       );
       setSubmitMessage(
         `Print request sent. ${result.totalFiles ?? files.length} file(s) queued.`,
@@ -171,7 +176,9 @@ const Body = () => {
   const roundedTotalPrice = roundPrintAmount(totalPrice);
   const walletBalance = user?.wallet_balance ?? 0;
   const walletInsufficient =
-    loggedUser && activePaymentMethod === "wallet" && walletBalance < roundedTotalPrice;
+    loggedUser &&
+    activePaymentMethod === "wallet" &&
+    walletBalance < roundedTotalPrice;
 
   return (
     <>

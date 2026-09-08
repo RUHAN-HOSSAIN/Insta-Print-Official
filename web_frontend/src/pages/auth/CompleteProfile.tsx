@@ -1,10 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
-import type {
-  AuthStep,
-  SignupSharedState,
-} from "../../components/auth/AuthModal";
+import type { SignupSharedState } from "../../components/auth/AuthModal";
 import { HALLS, type HallId } from "../../constant/halls";
 
 const API_BASE_URL =
@@ -14,7 +11,6 @@ import mainLogo from "../../assets/logo_main.webp";
 
 type CompleteProfileProps = {
   onClose: () => void;
-  onGoTo: (step: AuthStep) => void;
   signupData: SignupSharedState;
 };
 

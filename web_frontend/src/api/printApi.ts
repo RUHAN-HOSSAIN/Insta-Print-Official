@@ -6,12 +6,19 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787
 export async function submitPrintJob(
   formValues: PrintFormValues,
   files: File[],
+  token?: string | null,
 ): Promise<{ totalFiles: number }> {
   const formData = buildPrintFormData(formValues, files);
+
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
   const response = await fetch(`${API_BASE_URL}/print`, {
     method: "POST",
+    headers,
     body: formData,
   });
+
   const result = await response.json().catch(() => ({}));
   if (!response.ok)
     throw new Error(result.error ?? `Print request failed (${response.status}).`);

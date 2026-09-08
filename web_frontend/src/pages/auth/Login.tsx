@@ -13,7 +13,7 @@ type LoginProps = {
   onGoTo: (step: AuthStep) => void;
 };
 
-const IDENTIFIER_REGEX = /^\d{7}(@student\.ruet\.ac\.bd)?$/;
+const IDENTIFIER_REGEX = /^(\d{7}|[^\s@]+@[^\s@]+\.[^\s@]+)$/;
 
 const Login = ({ onClose, onGoTo }: LoginProps) => {
   const { login } = useAuth();
@@ -26,7 +26,7 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
 
   const validate = (): string | null => {
     if (!IDENTIFIER_REGEX.test(identifier.trim())) {
-      return "Enter a valid 7-digit roll (e.g. 2303130) or RUET student email (e.g. _roll_@student.ruet.ac.bd)";
+      return "Enter a valid 7-digit roll (e.g. 2303130) or valid gmail address!";
     }
     if (password.length < 6) {
       return "Password must be at least 6 characters";
@@ -94,8 +94,8 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             placeholder="Enter roll or student email"
-            pattern="^\d{7}(@student\.ruet\.ac\.bd)?$"
-            title="7-digit roll or {roll}@student.ruet.ac.bd"
+            pattern="^(\d{7}|[^\s@]+@[^\s@]+\.[^\s@]+)$"
+            title="7-digit roll or valid email address"
             className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
           />
         </div>

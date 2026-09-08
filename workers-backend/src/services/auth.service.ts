@@ -24,15 +24,8 @@ export async function requestSignupOtp(
   roll: number,
   email: string,
 ): Promise<void> {
-  const derivedEmail = `${roll}@student.ruet.ac.bd`;
-  if (email.toLowerCase() !== derivedEmail.toLowerCase()) {
-    throw new Error("Email does not match your Student ID.");
-  }
-
   const admin = getSupabaseAdmin(env);
 
-  // user_wallets এ row থাকা মানেই signup আগে সম্পূর্ণ হয়ে গেছে (completeSignup এই row বানায়)
-  // মাঝপথে ছেড়ে দেওয়া signup এর জন্য কখনো row তৈরি হয় না, তাই সেই roll আবার নির্দ্বিধায় try করতে পারবে
   const { data: existingWallet, error: walletCheckError } = await admin
     .from("user_wallets")
     .select("roll")
@@ -41,7 +34,9 @@ export async function requestSignupOtp(
 
   if (walletCheckError) throw new Error("Unable to check existing accounts.");
   if (existingWallet) {
-    throw new Error("This Student ID is already registered. Please log in instead.");
+    throw new Error(
+      "This Student ID is already registered. Please log in instead.",
+    );
   }
 
   const supabase = getSupabaseAnon(env);
@@ -93,18 +88,25 @@ export async function completeSignup(
 }> {
   const admin = getSupabaseAdmin(env);
 
-  const metadata: UserMetadata = { roll, name, gender, preferred_hall_id: preferredHallId };
-  const { data: updated, error: updateError } = await admin.auth.admin.updateUserById(userId, {
-    password,
-    user_metadata: metadata,
-    email_confirm: true,
-  });
+  const metadata: UserMetadata = {
+    roll,
+    name,
+    gender,
+    preferred_hall_id: preferredHallId,
+  };
+  const { data: updated, error: updateError } =
+    await admin.auth.admin.updateUserById(userId, {
+      password,
+      user_metadata: metadata,
+      email_confirm: true,
+    });
 
-  if (updateError || !updated.user) throw new Error(updateError?.message ?? "Signup failed");
+  if (updateError || !updated.user)
+    throw new Error(updateError?.message ?? "Signup failed");
 
   const { error: walletError } = await admin
     .from("user_wallets")
-    .insert({ user_id: userId, roll, balance: 0 });
+    .insert({ user_id: userId, roll, balance: 0, email });
 
   if (walletError) {
     if (walletError.code === "23505") {
@@ -113,12 +115,15 @@ export async function completeSignup(
     throw new Error("Unable to create wallet");
   }
 
-  const { data: session, error: sessionError } = await getSupabaseAnon(env).auth.signInWithPassword({
+  const { data: session, error: sessionError } = await getSupabaseAnon(
+    env,
+  ).auth.signInWithPassword({
     email,
     password,
   });
 
-  if (sessionError || !session.session) throw new Error("Signup complete but login failed");
+  if (sessionError || !session.session)
+    throw new Error("Signup complete but login failed");
 
   return {
     accessToken: session.session.access_token,
@@ -150,7 +155,7 @@ export async function loginUser(
     // roll দিয়ে user_wallets থেকে সরাসরি user_id বের করো — fast, indexed, কোনো listUsers লাগে না
     const { data: walletRow, error: walletError } = await admin
       .from("user_wallets")
-      .select("user_id")
+      .select("email")
       .eq("roll", Number(identifier))
       .maybeSingle();
 
@@ -158,15 +163,14 @@ export async function loginUser(
       throw new Error("No account found with this Student ID.");
     }
 
-    const { data: userData, error: userError } = await admin.auth.admin.getUserById(walletRow.user_id);
-    if (userError || !userData.user?.email) {
-      throw new Error("No account found with this Student ID.");
-    }
-    email = userData.user.email;
+    email = walletRow.email;
   }
 
   const supabase = getSupabaseAnon(env);
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
   if (error || !data.session || !data.user) {
     throw new Error("Incorrect password or account not found.");
@@ -195,12 +199,22 @@ export async function loginUser(
 // ─── Forgot password flow ─────────────────────────────────────────────────────
 
 export async function requestForgotOtp(env: Env, email: string): Promise<void> {
+  const admin = getSupabaseAdmin(env);
+
+  // user_wallets এ email আছে কিনা check — O(1), indexed
+  const { data, error } = await admin
+    .from("user_wallets")
+    .select("user_id")
+    .eq("email", email.toLowerCase().trim())
+    .maybeSingle();
+
+  if (error || !data) {
+    throw new Error("No account found with this email. Please sign up first.");
+  }
+
   const supabase = getSupabaseAnon(env);
-
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {});
-
-  // Security: error থাকলেও frontend কে জানাবো না (account exist করে কিনা বুঝতে না পারে)
-  if (error) console.error("Forgot OTP error:", error.message);
+  const { error: otpError } = await supabase.auth.resetPasswordForEmail(email, {});
+  if (otpError) throw new Error(otpError.message);
 }
 
 export async function verifyForgotOtp(
@@ -226,11 +240,19 @@ export async function resetPassword(
   accessToken: string,
   newPassword: string,
 ): Promise<void> {
-  const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_KEY, {
-    global: { headers: { Authorization: `Bearer ${accessToken}` } },
+  const anon = getSupabaseAnon(env);
+
+  // Token থেকে user বের করো
+  const { data, error: userError } = await anon.auth.getUser(accessToken);
+  if (userError || !data.user)
+    throw new Error("Invalid or expired reset token.");
+
+  // Admin দিয়ে password update করো — session লাগে না
+  const admin = getSupabaseAdmin(env);
+  const { error } = await admin.auth.admin.updateUserById(data.user.id, {
+    password: newPassword,
   });
 
-  const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) throw new Error(error.message);
 }
 

@@ -40,7 +40,7 @@ create table print_jobs (
 
 
 
-Table-03: payments
+Table-03: payments (Eita apatoto baad,, pore mfs_transaction table use korteci!!)
 1. Si_No (PK)= (auto gen, koto number print eita: 1,2,3,4,.....)
 2. txn_id	(text)=	bKash/Nagad txn id
 3. via (text)= bkash / nagad / rocket / bangla_qr
@@ -116,8 +116,10 @@ create table user_data (
 
 
 
+
 -- Restart the table 2 and 3....
 truncate table print_jobs, payments restart identity cascade;
+
 
 
 
@@ -132,3 +134,126 @@ create table user_wallets (
 -- Row Level Security
 alter table user_wallets enable row level security;
 create policy "service role only" on user_wallets using (false);
+-- Supabase SQL Editor এ চালাও
+
+
+alter table user_wallets add column email text unique;
+
+
+
+
+
+CREATE OR REPLACE FUNCTION deduct_wallet_balance(
+  p_user_id UUID,
+  p_amount   NUMERIC
+)
+RETURNS NUMERIC
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_current NUMERIC;
+  v_new     NUMERIC;
+BEGIN
+  -- Row-level lock — অন্য transaction এই row touch করতে পারবে না
+  SELECT balance INTO v_current
+  FROM user_wallets
+  WHERE user_id = p_user_id
+  FOR UPDATE;
+
+  IF v_current IS NULL THEN
+    RAISE EXCEPTION 'Wallet not found';
+  END IF;
+
+  IF v_current < p_amount THEN
+    RAISE EXCEPTION 'Insufficient balance. Available: %', v_current;
+  END IF;
+
+  v_new := ROUND(v_current - p_amount, 2);
+
+  UPDATE user_wallets
+  SET balance = v_new
+  WHERE user_id = p_user_id;
+
+  RETURN v_new;
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION add_wallet_balance(
+  p_user_id UUID,
+  p_amount   NUMERIC
+)
+RETURNS NUMERIC
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_new NUMERIC;
+BEGIN
+  UPDATE user_wallets
+  SET balance = ROUND(balance + p_amount, 2)
+  WHERE user_id = p_user_id
+  RETURNING balance INTO v_new;
+
+  IF v_new IS NULL THEN
+    RAISE EXCEPTION 'Wallet not found';
+  END IF;
+
+  RETURN v_new;
+END;
+$$;
+
+
+
+
+
+
+
+** NB: table no-3 (payment table) ta baad dicci,, akhon eita theke payment er info gula hobey... 
+-- Supabase Table Schema for bKash & Nagad Real-time SMS Transactions
+-- Copy and run this in your Supabase Project -> SQL Editor
+
+CREATE TABLE IF NOT EXISTS public.mfs_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    provider VARCHAR(20) NOT NULL,              -- 'bKash' | 'Nagad'
+    transaction_type VARCHAR(50) NOT NULL,      -- 'Receive Money', 'Cash Out', 'Payment', etc.
+    amount NUMERIC(12, 2),                      -- e.g. 1500.00
+    currency VARCHAR(10) DEFAULT 'BDT',
+    trx_id VARCHAR(50) UNIQUE,                  -- e.g. '9K2L1M4N'
+    counterparty_role VARCHAR(50),              -- 'sender' | 'recipient' | 'merchant' | 'agent'
+    counterparty_identifier VARCHAR(50),        -- '017XXXXXXXX'
+    counterparty_name VARCHAR(100),             -- 'Shwapno', etc.
+    balance NUMERIC(12, 2),                     -- Remaining balance after trx
+    fee NUMERIC(12, 2),                         -- Transaction charge
+    reference TEXT,                             -- Reference note
+    sms_timestamp VARCHAR(50),                  -- Raw timestamp from SMS
+    raw_text TEXT NOT NULL,                     -- Original unedited SMS string
+    confidence_score NUMERIC(4, 3) DEFAULT 1.0, -- Parser accuracy
+    device_id VARCHAR(100),                     -- Android Phone Device ID
+    received_at TIMESTAMPTZ DEFAULT NOW(),      -- Webhook arrival time
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexing for fast search and duplicate prevention
+CREATE INDEX IF NOT EXISTS idx_mfs_trx_id ON public.mfs_transactions(trx_id);
+CREATE INDEX IF NOT EXISTS idx_mfs_provider ON public.mfs_transactions(provider);
+CREATE INDEX IF NOT EXISTS idx_mfs_type ON public.mfs_transactions(transaction_type);
+CREATE INDEX IF NOT EXISTS idx_mfs_created_at ON public.mfs_transactions(created_at DESC);
+
+-- Enable Row Level Security (RLS)
+ALTER TABLE public.mfs_transactions ENABLE ROW LEVEL SECURITY;
+
+-- Allow anonymous or authenticated insertion
+CREATE POLICY "Allow public insert via API key" 
+ON public.mfs_transactions FOR INSERT 
+WITH CHECK (true);
+
+-- Allow reading
+CREATE POLICY "Allow public read" 
+ON public.mfs_transactions FOR SELECT 
+USING (true);
+
+alter table public.mfs_transactions
+  add column status text not null default 'not_used'
+    check (status in ('not_used', 'used')),
+  add column use_for text
+    check (use_for in ('direct_print', 'top_up'));
