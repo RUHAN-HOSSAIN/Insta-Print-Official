@@ -71,13 +71,13 @@ const FileUploadBox = ({
       </button>
 
       {/* Subtext */}
-      <p className="text-xs md:text-sm text-gray-500 font-light italic">(Keep 15 MB max file size)</p>
+      <p className="text-xs md:text-sm text-gray-500 font-light italic">(PDF max 15 MB; JPG/PNG max 5 MB)</p>
 
       {/* Hidden input */}
       <input
         ref={inputRef}
         type="file"
-        accept=".pdf,application/pdf"
+        accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
         multiple
         className="hidden"
         onChange={handleInputChange}

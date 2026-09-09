@@ -11,6 +11,7 @@ import {
 import PrintSummary from "../../components/print/PrintSummary";
 import PrinterStatus from "./PrinterStatus";
 import { createCoverLetterPdf } from "../../utils/createCoverLetterPdf";
+import { convertImageToPdf } from "../../utils/imageToPdf";
 import type { PaymentMethod, PrintFile } from "../../types/PrintRequest";
 import { usePrintFiles } from "../../hooks/usePrintFiles";
 import { useAuth } from "../../context/useAuth";
@@ -43,6 +44,27 @@ const Body = () => {
     setGeneratedCoverLetter(null);
   };
 
+  const handleFilesSelected = (selectedFiles: File[]) => {
+    const availableSlots = 10 - printFiles.files.length;
+    const acceptedFiles = selectedFiles.filter((file) => {
+      const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+      const isImage = ["image/jpeg", "image/png"].includes(file.type) || /\.(jpe?g|png)$/i.test(file.name);
+      if (!isPdf && !isImage) {
+        return false;
+      }
+      const maxSize = isImage ? 5 * 1024 * 1024 : 15 * 1024 * 1024;
+      if (file.size > maxSize) {
+        return false;
+      }
+      return true;
+    }).slice(0, Math.max(availableSlots, 0));
+
+    if (acceptedFiles.length !== selectedFiles.length) {
+      setFormError("PDF files can be up to 15 MB; JPG/PNG images can be up to 5 MB, with a maximum of 10 files.");
+    }
+    if (acceptedFiles.length) printFiles.addFiles(acceptedFiles);
+  };
+
   const handleCoverLetterNameChange = (name: string) => {
     clearGeneratedCoverLetter();
     setCoverLetterName(name);
@@ -56,11 +78,7 @@ const Body = () => {
   const handleDrop = (event: React.DragEvent) => {
     event.preventDefault();
     setIsDragging(false);
-    printFiles.addFiles(
-      Array.from(event.dataTransfer.files).filter(
-        (file) => file.type === "application/pdf",
-      ),
-    );
+    handleFilesSelected(Array.from(event.dataTransfer.files));
   };
 
   const handleClear = () => {
@@ -89,9 +107,12 @@ const Body = () => {
     setFormError("");
     setSubmitMessage("");
     if (!printFiles.files.length)
-      return setFormError("Please upload at least one PDF file.");
-    if (printFiles.files.some((file) => file.size > 15 * 1024 * 1024))
-      return setFormError("Each PDF file must be 15 MB or smaller.");
+      return setFormError("Please upload at least one file.");
+    if (printFiles.files.some((file) => {
+      const isImage = file.type === "image/jpeg" || file.type === "image/png" || /\.(jpe?g|png)$/i.test(file.name);
+      return file.size > (isImage ? 5 : 15) * 1024 * 1024;
+    }))
+      return setFormError("PDF files can be up to 15 MB; JPG/PNG images can be up to 5 MB.");
     if (!hallId) return setFormError("Please select a collection hall.");
     if (!printerOnline)
       return setFormError("The selected hall printer must be online.");
@@ -114,6 +135,16 @@ const Body = () => {
       let metadata = printFiles.details.filter(
         (_, index) => printFiles.files[index] !== generatedCoverLetter,
       );
+      const convertedFiles = await Promise.all(
+        files.map((file) => {
+          const isImage = file.type === "image/jpeg" || file.type === "image/png" || /\.(jpe?g|png)$/i.test(file.name);
+          return isImage ? convertImageToPdf(file) : file;
+        }),
+      );
+      files = convertedFiles;
+      if (files.some((file) => file.size > 15 * 1024 * 1024)) {
+        return setFormError("Each final PDF must be 15 MB or smaller.");
+      }
       if (coverLetterEnabled && !loggedUser) {
         const cover = await createCoverLetterPdf(
           coverLetterName.trim(),
@@ -155,7 +186,11 @@ const Body = () => {
         token, // ← যোগ করো
       );
       setSubmitMessage(
-        `Print request sent. ${result.totalFiles ?? files.length} file(s) queued.`,
+        result.status === "insufficient_payment"
+          ? result.message ?? "Printing did not start. The payment was added to your wallet."
+          : result.wallet_credited
+            ? `Print request sent. ৳${result.wallet_credited.toFixed(2)} overpayment was added to your wallet.`
+            : `Print request sent. ${result.totalFiles ?? files.length} file(s) queued.`,
       );
     } catch (error) {
       setFormError(
@@ -224,7 +259,7 @@ const Body = () => {
             className={`flex h-fit flex-col gap-6 rounded-lg  px-7 pt-15 pb-9 shadow-[0px_0px_10px_rgba(0,0,0,0.2)] lg:p-10 bg-white ${printFiles.files.length === 0 ? "w-full md:mx-auto max-w-xl" : ""}`}
           >
             <FileUploadBox
-              onFilesSelected={printFiles.addFiles}
+              onFilesSelected={handleFilesSelected}
               isDragging={isDragging}
               onDragOver={(event) => {
                 event.preventDefault();

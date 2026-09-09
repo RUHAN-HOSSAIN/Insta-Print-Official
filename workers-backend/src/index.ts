@@ -5,7 +5,6 @@ import { Env } from "./types";
 // Existing controllers
 import { getDeviceStatus } from "./controllers/device.controller";
 import { submitPrintJob } from "./controllers/print.controller";
-import { getSupabase } from "./services/supabase.service";
 import { HallId } from "./config/constants";
 
 // New auth + user controllers
@@ -49,20 +48,6 @@ app.use("*", cors({
 // ─── Health ───────────────────────────────────────────────────────────────────
 
 app.get("/health", (c) => c.json({ status: "ok" }));
-
-app.get("/test-email", async (c) => {
-  const supabase = getSupabase(c.env);
-
-  const { data, error } = await supabase.auth.signInWithOtp({
-    email: "ruhanhossain207@gmail.com",
-  });
-
-  if (error) {
-    return c.json({ success: false, error: error.message }, 400);
-  }
-
-  return c.json({ success: true, message: "OTP sent successfully", data });
-});
 
 // ─── Existing routes (unchanged) ─────────────────────────────────────────────
 

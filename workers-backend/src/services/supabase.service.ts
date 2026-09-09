@@ -1,7 +1,7 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { Env, TokenRow } from "../types";
 import { EPSON_AUTH_URL } from "../config/constants";
-import { findUnusedPayment, markPaymentUsed, getPaymentComment } from "./payment.service";
+import { MfsTransaction } from "./payment.service";
 import { getSupabaseAdmin } from "./auth.service";
 
 export interface PrintJobInput {
@@ -18,47 +18,7 @@ export function getSupabase(env: Env): SupabaseClient {
   return createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
 }
 
-// Direct payment — mfs_transactions verify করে print job বানাও
-export async function createPrintJobFromPayment(
-  env: Env,
-  input: PrintJobInput,
-): Promise<{ si_no: number; amount_paid: number; sender_number: string | null }> {
-  const admin = getSupabaseAdmin(env);
-
-  const payment = await findUnusedPayment(env, input.txnId!);
-  const paymentComment = getPaymentComment(Number(payment.amount), input.amountCalculated);
-
-  const { data: job, error: jobError } = await admin
-    .from("print_jobs")
-    .insert({
-      hall_id: input.hallId,
-      logged_user: input.loggedUser,
-      payment_method: "direct",
-      txn_id: payment.trx_id,
-      amount_paid: Number(payment.amount),
-      sender_number: payment.counterparty_identifier,
-      amount_calculated: input.amountCalculated,
-      files: input.files,
-      total_files: input.totalFiles,
-      total_page_print: input.totalPagePrint,
-      comments: paymentComment ?? null,
-      status: false,
-    })
-    .select("si_no")
-    .single();
-
-  if (jobError || !job) throw new Error("Unable to create print job");
-
-  await markPaymentUsed(env, payment.id, "direct_print");
-
-  return {
-    si_no: job.si_no,
-    amount_paid: Number(payment.amount),
-    sender_number: payment.counterparty_identifier,
-  };
-}
-
-// Wallet payment — balance কেটে print job বানাও
+// ─── Wallet payment job ───────────────────────────────────────────────────────
 export async function createWalletPrintJob(
   env: Env,
   input: PrintJobInput,
@@ -66,52 +26,82 @@ export async function createWalletPrintJob(
 ): Promise<{ si_no: number }> {
   const admin = getSupabaseAdmin(env);
 
-  // Atomic deduction — Postgres function, race condition safe
+  // Atomic deduction — balance কম থাকলে Postgres error throw করবে
   const { error: rpcError } = await admin.rpc("deduct_wallet_balance", {
     p_user_id: userId,
     p_amount: input.amountCalculated,
   });
   if (rpcError) throw new Error(rpcError.message);
 
-  const { data: job, error: jobError } = await admin
-    .from("print_jobs")
-    .insert({
-      hall_id: input.hallId,
-      logged_user: true,
-      payment_method: "wallet",
-      txn_id: null,
-      amount_paid: input.amountCalculated,
-      sender_number: null,
-      amount_calculated: input.amountCalculated,
-      files: input.files,
-      total_files: input.totalFiles,
-      total_page_print: input.totalPagePrint,
-      comments: null,
-      status: false,
-    })
-    .select("si_no")
-    .single();
+  try {
+    const { data: job, error: jobError } = await admin
+      .from("print_jobs")
+      .insert({
+        hall_id: input.hallId,
+        logged_user: true,
+        payment_method: "wallet",
+        txn_id: null,
+        amount_paid: input.amountCalculated,
+        sender_number: null,
+        amount_calculated: input.amountCalculated,
+        files: input.files,
+        total_files: input.totalFiles,
+        total_page_print: input.totalPagePrint,
+        comments: null,
+        status: false,
+        lifecycle_status: "pending",
+      })
+      .select("si_no")
+      .single();
 
-  if (jobError || !job) throw new Error("Unable to create print job");
+    if (jobError || !job) throw new Error("Unable to create print job");
 
-  return { si_no: job.si_no };
+    return { si_no: job.si_no };
+  } catch (error) {
+    await admin.rpc("add_wallet_balance", {
+      p_user_id: userId,
+      p_amount: input.amountCalculated,
+    });
+    throw error;
+  }
 }
 
+// ─── Print job status update — comments কে touch করবো না ───────────────────
 export async function updatePrintJobStatus(
   env: Env,
   jobSiNo: number,
   status: boolean,
-  jobIds: string[],
-  comments?: string,
+  jobIds?: string[],
+  lifecycleStatus?: "pending" | "uploading" | "printing" | "completed" | "failed",
+  errorMessage?: string | null,
 ): Promise<void> {
+  const update: Record<string, unknown> = { status };
+  if (jobIds) update.job_ids = jobIds;
+  if (lifecycleStatus) update.lifecycle_status = lifecycleStatus;
+  if (errorMessage !== undefined) update.error_message = errorMessage;
+
   const { error } = await getSupabaseAdmin(env)
     .from("print_jobs")
-    .update({ status, job_ids: jobIds, comments: comments ?? null })
+    .update(update)
     .eq("si_no", jobSiNo);
 
   if (error) throw new Error("Unable to update print job status");
 }
 
+export async function deletePrintJobReservation(
+  env: Env,
+  jobSiNo: number,
+): Promise<void> {
+  const { error } = await getSupabaseAdmin(env)
+    .from("print_jobs")
+    .delete()
+    .eq("si_no", jobSiNo)
+    .eq("status", false);
+
+  if (error) throw new Error("Unable to remove print job reservation");
+}
+
+// ─── Token management ─────────────────────────────────────────────────────────
 export async function getTokens(env: Env, tokenRow: number): Promise<TokenRow> {
   const { data, error } = await getSupabaseAdmin(env)
     .from("epson_tokens")
@@ -129,7 +119,7 @@ export async function saveTokens(
   accessToken: string,
   refreshToken: string,
 ): Promise<void> {
-  await getSupabaseAdmin(env)
+  const { error } = await getSupabaseAdmin(env)
     .from("epson_tokens")
     .update({
       access_token: accessToken,
@@ -137,6 +127,7 @@ export async function saveTokens(
       updated_at: new Date().toISOString(),
     })
     .eq("id", tokenRow);
+  if (error) throw new Error("Failed to save Epson tokens");
 }
 
 export async function refreshAccessToken(env: Env, tokenRow: number): Promise<string> {
@@ -160,4 +151,35 @@ export async function refreshAccessToken(env: Env, tokenRow: number): Promise<st
   const data: any = await res.json();
   await saveTokens(env, tokenRow, data.access_token, data.refresh_token);
   return data.access_token;
+}
+
+export async function createDirectPrintJobReservation(
+  env: Env,
+  input: PrintJobInput,
+  payment: MfsTransaction,
+  comments: string | null,
+): Promise<{ si_no: number }> {
+  const admin = getSupabaseAdmin(env);
+  const { data: job, error } = await admin
+    .from("print_jobs")
+    .insert({
+      hall_id: input.hallId,
+      logged_user: input.loggedUser,
+      payment_method: "direct",
+      txn_id: payment.trx_id,
+      amount_paid: Number(payment.amount),
+      sender_number: payment.counterparty_identifier,
+      amount_calculated: input.amountCalculated,
+      files: input.files,
+      total_files: input.totalFiles,
+      total_page_print: input.totalPagePrint,
+      comments,
+      status: false,
+      lifecycle_status: "pending",
+    })
+    .select("si_no")
+    .single();
+
+  if (error || !job) throw new Error("Unable to create print job reservation");
+  return { si_no: job.si_no };
 }

@@ -7,7 +7,13 @@ export async function submitPrintJob(
   formValues: PrintFormValues,
   files: File[],
   token?: string | null,
-): Promise<{ totalFiles: number }> {
+): Promise<{
+  totalFiles?: number;
+  status?: string;
+  printed?: boolean;
+  message?: string;
+  wallet_credited?: number;
+}> {
   const formData = buildPrintFormData(formValues, files);
 
   const headers: Record<string, string> = {};

@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
 import logoUrl from "./logo_main_grayscale.jpg";
 
 const PAGE_WIDTH = 595.28;
@@ -31,6 +31,7 @@ export async function createCoverLetterPdf(
 ): Promise<File> {
   const pdfDocument = await PDFDocument.create();
   const page = pdfDocument.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  page.setRotation(degrees(180));
   const regularFont = await pdfDocument.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDocument.embedFont(StandardFonts.HelveticaBold);
   const logo = await loadGrayscaleLogo(pdfDocument);

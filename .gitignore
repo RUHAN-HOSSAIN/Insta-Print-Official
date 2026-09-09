@@ -3,3 +3,4 @@ DB_tables.txt
 
 node_modules/
 .env
+*.md

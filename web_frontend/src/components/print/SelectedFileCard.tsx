@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { CloseIcon } from "../../assets/icons/Icons";
 import { getPdfPageCount } from "../../utils/pdfPageCount";
 import { analyzePdfInkCoverage } from "../../utils/pdfColorAnalysis";
+import { analyzeImageInkCoverage } from "../../utils/imageColorAnalysis";
 
 import { pricingData } from "../../constant/pricing";
 import type { PrintFile } from "../../types/PrintRequest";
@@ -64,18 +65,27 @@ const SelectedFileCard = ({
 
   useEffect(() => {
     let isCurrentFile = true;
+    const isImage = file.type === "image/jpeg" || file.type === "image/png" ||
+      /\.(jpe?g|png)$/i.test(file.name);
 
-    getPdfPageCount(file)
-      .then((count) => {
-        if (isCurrentFile) setPageCount(count);
-      })
-      .catch(() => {
-        if (isCurrentFile) setPageCountError(true);
-      });
+    if (isImage) {
+      setPageCount(1);
+    } else {
+      getPdfPageCount(file)
+        .then((count) => {
+          if (isCurrentFile) setPageCount(count);
+        })
+        .catch(() => {
+          if (isCurrentFile) setPageCountError(true);
+        });
+    }
 
     // cover letter এর জন্য ink analysis দরকার নেই
     if (!isCoverLetter) {
-      analyzePdfInkCoverage(file, BASE_BW, BASE_COLOR).then((result) => {
+      const analysis = isImage
+        ? analyzeImageInkCoverage(file, BASE_BW, BASE_COLOR)
+        : analyzePdfInkCoverage(file, BASE_BW, BASE_COLOR);
+      analysis.then((result) => {
         if (isCurrentFile) {
           setInkRates({
             bwRate: result.bwRate,
@@ -125,7 +135,7 @@ const SelectedFileCard = ({
         </h2>
         <div className="flex items-center gap-2 md:gap-5 shrink-0">
           <span className="text-gray-700 text-[10px] md:text-[13px] font-semibold shadow-[0px_0px_10px_rgba(0,0,0,0.1)] px-1.5 py-0.5 md:px-3 md:py-1 rounded-full border border-gray-200">
-            {pageCountError ? "Invalid PDF" : pageCount === null ? "Reading..." : `${pageCount} page${pageCount === 1 ? "" : "s"}`}
+            {pageCountError ? "Invalid file" : pageCount === null ? "Reading..." : `${pageCount} page${pageCount === 1 ? "" : "s"}`}
           </span>
           <button type="button" onClick={() => onRemove(index)} className="hover:scale-107 transition-transform">
             <CloseIcon className="text-white bg-red-600 rounded w-5 h-5 md:w-6 md:h-6" />

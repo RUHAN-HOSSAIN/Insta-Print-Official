@@ -26,7 +26,7 @@ export async function printFile(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      jobName: `job_${Date.now()}`,
+      jobName: `job_${crypto.randomUUID()}`,
       printMode: "document",
       printSettings: {
         paperSize: "ps_a4",
@@ -53,7 +53,7 @@ export async function printFile(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        jobName: `job_${Date.now()}`,
+        jobName: `job_${crypto.randomUUID()}`,
         printMode: "document",
         printSettings: {
           paperSize: "ps_a4",
@@ -71,6 +71,7 @@ export async function printFile(
     const retryData = (await retryRes.json()) as any;
     return uploadAndPrint(
       env,
+      tokenRow,
       access_token,
       retryData.jobId,
       retryData.uploadUri,
@@ -87,6 +88,7 @@ export async function printFile(
 
   return uploadAndPrint(
     env,
+    tokenRow,
     access_token,
     jobId,
     uploadUri,
@@ -98,20 +100,36 @@ export async function printFile(
 // Upload + print execute আলাদা function এ
 async function uploadAndPrint(
   env: Env,
+  tokenRow: number,
   accessToken: string,
   jobId: string,
   uploadUri: string,
   fileBuffer: ArrayBuffer,
   fileName: string,
 ): Promise<string> {
-  const uploadRes = await fetch(`${uploadUri}&File=${fileName}`, {
+  const uploadUrl = `${uploadUri}&File=${encodeURIComponent(fileName)}`;
+  let uploadRes = await fetch(uploadUrl, {
     method: "POST",
-    headers: { "Content-Type": "application/pdf" },
+    headers: {
+      ...authHeaders(accessToken, env.EPSON_API_KEY),
+      "Content-Type": "application/pdf",
+    },
     body: fileBuffer,
   });
+  if (uploadRes.status === 401) {
+    accessToken = await refreshAccessToken(env, tokenRow);
+    uploadRes = await fetch(uploadUrl, {
+      method: "POST",
+      headers: {
+        ...authHeaders(accessToken, env.EPSON_API_KEY),
+        "Content-Type": "application/pdf",
+      },
+      body: fileBuffer,
+    });
+  }
   if (!uploadRes.ok) throw new Error(`Upload failed: ${uploadRes.status}`);
 
-  const printRes = await fetch(
+  let printRes = await fetch(
     `${EPSON_BASE_URL}/api/2/printing/jobs/${jobId}/print`,
     {
       method: "POST",
@@ -121,6 +139,16 @@ async function uploadAndPrint(
       },
     },
   );
+  if (printRes.status === 401) {
+    accessToken = await refreshAccessToken(env, tokenRow);
+    printRes = await fetch(
+      `${EPSON_BASE_URL}/api/2/printing/jobs/${jobId}/print`,
+      {
+        method: "POST",
+        headers: authHeaders(accessToken, env.EPSON_API_KEY),
+      },
+    );
+  }
   if (!printRes.ok) throw new Error(`Print execute failed: ${printRes.status}`);
 
   console.log(`✓ Printed: ${fileName}`);
