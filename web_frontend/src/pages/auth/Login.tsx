@@ -21,6 +21,7 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -59,7 +60,7 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
       if (!data.token || !data.user)
         throw new Error("Invalid response from server");
 
-      login(data.token, data.user);
+      login(data.token, data.user, rememberMe);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to log in");
@@ -88,7 +89,9 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
           </label>
           <input
             id="identifier"
+            name="username"
             type="text"
+            autoComplete="username"
             required
             inputMode="text"
             value={identifier}
@@ -110,7 +113,9 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
           <div className="relative">
             <input
               id="password"
+              name="password"
               type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
               required
               minLength={6}
               value={password}
@@ -140,6 +145,8 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
               id="remember"
               name="remember"
               type="checkbox"
+              checked={rememberMe}
+              onChange={(event) => setRememberMe(event.target.checked)}
               className="sr-only"
             />
             <span

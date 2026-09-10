@@ -6,6 +6,7 @@ interface PrintSummaryProps {
   transactionId: string;
   transactionError: boolean;
   showTransactionInput: boolean;
+  transactionInputDisabled: boolean;
   formError: string;
   submitMessage: string;
   isBusy: boolean;
@@ -24,6 +25,7 @@ const PrintSummary = ({
   transactionId,
   transactionError,
   showTransactionInput,
+  transactionInputDisabled,
   formError,
   submitMessage,
   isBusy,
@@ -39,12 +41,13 @@ const PrintSummary = ({
     {children}
     <div className="flex items-center justify-between gap-7 my-5 mr-2">
       {showTransactionInput && (
-        <div className="shadow-[0px_0px_4px_rgba(0,0,0,0.2)] border border-gray-300 rounded-lg px-3 py-2 flex items-center justify-between gap-3 w-full bg-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-200">
+        <div className={`shadow-[0px_0px_4px_rgba(0,0,0,0.2)] border border-gray-300 rounded-lg px-3 py-2 flex items-center justify-between gap-3 w-full bg-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-200 ${transactionInputDisabled ? "bg-slate-100 opacity-60" : ""}`}>
           <input
             type="text"
-            placeholder="Transaction ID"
+            placeholder={transactionInputDisabled ? "Not required when using wallet" : "Transaction ID"}
             value={transactionId}
             onChange={(event) => onTransactionChange(event.target.value)}
+            disabled={transactionInputDisabled}
             aria-invalid={transactionError}
             className={`w-full focus:outline-none ${transactionError ? "text-red-700" : ""}`}
           />

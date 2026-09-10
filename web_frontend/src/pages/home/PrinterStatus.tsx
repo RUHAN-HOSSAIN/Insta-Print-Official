@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { HALLS } from "../../constant/halls";
 import { RefreshIcon } from "../../assets/icons/Icons";
+import StyledSelect from "../../components/common/StyledSelect";
 
 const collectionPoints = HALLS.filter((hall) => hall.active);
 
@@ -129,24 +130,20 @@ const PrinterStatus = ({
             />
           </button>
         </div>
-        <select
+        <StyledSelect
+          id="collection-point"
           value={selectedPoint}
-          onChange={(event) => {
-            setSelectedPoint(event.target.value);
-            onSelectionChange?.(event.target.value, false);
+          options={collectionPoints.map((point) => ({
+            value: point.id,
+            label: point.name,
+          }))}
+          placeholder="Choose a collection point"
+          onChange={(value) => {
+            setSelectedPoint(value);
+            onSelectionChange?.(value, false);
           }}
-          className={`w-full text-sm sm:text-base  appearance-none rounded-lg border bg-slate-50 px-4 py-2 font-normal text-slate-800 outline-none transition focus:border-blue-600 focus:bg-white focus:ring-2 focus:ring-blue-100 ${hasError ? "border-red-500 ring-2 ring-red-100" : "border-slate-300"}`}
-          aria-label="Select collection hall"
-        >
-          <option value="" disabled>
-            Choose a collection point
-          </option>
-          {collectionPoints.map((point) => (
-            <option key={point.id} value={point.id}>
-              {point.name}
-            </option>
-          ))}
-        </select>
+          error={hasError}
+        />
       </label>
 
       {/* <p className="font-roboto text-[13px] md:text-sm leading-5 text-red-700">

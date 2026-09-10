@@ -16,14 +16,15 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (token: string, user: User) => void;
+  login: (token: string, user: User, rememberMe?: boolean) => void;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const AUTH_SESSION_MS = 24 * 60 * 60 * 1000; // 24 hour
+const DEFAULT_SESSION_MS = 24 * 60 * 60 * 1000;
+const REMEMBERED_SESSION_MS = 7 * 24 * 60 * 60 * 1000;
 
 // ─── Initial state (localStorage থেকে) ───────────────────────────────────────
 
@@ -55,10 +56,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(getInitialUser);
   const [token, setToken] = useState<string | null>(getInitialToken);
 
-  const login = (newToken: string, newUser: User) => {
+  const login = (newToken: string, newUser: User, rememberMe = false) => {
     localStorage.setItem("auth_token", newToken);
     localStorage.setItem("auth_user", JSON.stringify(newUser));
-    localStorage.setItem("auth_expires_at", String(Date.now() + AUTH_SESSION_MS));
+    localStorage.setItem(
+      "auth_expires_at",
+      String(Date.now() + (rememberMe ? REMEMBERED_SESSION_MS : DEFAULT_SESSION_MS)),
+    );
+    localStorage.setItem("auth_remember_me", String(rememberMe));
     setToken(newToken);
     setUser(newUser);
   };
@@ -67,6 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("auth_token");
     localStorage.removeItem("auth_user");
     localStorage.removeItem("auth_expires_at");
+    localStorage.removeItem("auth_remember_me");
     setToken(null);
     setUser(null);
   };

@@ -8,6 +8,7 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 import mainLogo from "../../assets/logo_main.webp";
+import SignupProgress from "../../components/auth/SignupProgress";
 
 type VerifyOtpProps = {
   onClose: () => void;
@@ -92,6 +93,8 @@ const VerifyOtp = ({
       <p className="text-slate-700 text-center mt-2 text-sm font-light">
         Enter the OTP sent to {signupData.email}.
       </p>
+
+      <SignupProgress step="otp" />
 
       <form className="space-y-6 mt-7" onSubmit={handleSubmit} noValidate>
         <div>

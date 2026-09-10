@@ -291,7 +291,8 @@ const Body = () => {
               roundedTotalPrice={roundedTotalPrice}
               transactionId={transactionId}
               transactionError={errorMentions("transaction")}
-              showTransactionInput={activePaymentMethod === "direct"}
+              showTransactionInput
+              transactionInputDisabled={activePaymentMethod === "wallet"}
               formError={formError}
               submitMessage={submitMessage}
               isBusy={isBusy}

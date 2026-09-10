@@ -8,6 +8,7 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 import mainLogo from "../../assets/logo_main.webp";
+import SignupProgress from "../../components/auth/SignupProgress";
 
 type SignUpProps = {
   onClose: () => void;
@@ -62,6 +63,8 @@ const SignUp = ({ onGoTo, signupData, onSignupDataChange }: SignUpProps) => {
       <p className="text-slate-700 text-center mt-2 text-sm font-light">
         Enter your student ID and RUET email to get started.
       </p>
+
+      <SignupProgress step="signup" />
 
       <form className="space-y-6 mt-7" onSubmit={handleSubmit} noValidate>
         <div>

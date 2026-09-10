@@ -2,12 +2,14 @@ import { useState, type FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
 import type { SignupSharedState } from "../../components/auth/AuthModal";
+import StyledSelect from "../../components/common/StyledSelect";
 import { HALLS, type HallId } from "../../constant/halls";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 import mainLogo from "../../assets/logo_main.webp";
+import SignupProgress from "../../components/auth/SignupProgress";
 
 type CompleteProfileProps = {
   onClose: () => void;
@@ -82,6 +84,8 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
         One last step, then you can start printing.
       </p>
 
+      <SignupProgress step="profile" />
+
       <form className="space-y-6 mt-7" onSubmit={handleSubmit} noValidate>
         <div>
           <label
@@ -92,7 +96,9 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
           </label>
           <input
             id="name"
+            name="name"
             type="text"
+            autoComplete="name"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -110,8 +116,20 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
           </label>
           <div className="relative">
             <input
+              type="text"
+              name="username"
+              value={signupData.roll}
+              readOnly
+              autoComplete="username"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="sr-only"
+            />
+            <input
               id="password"
+              name="password"
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
               required
               minLength={6}
               value={password}
@@ -144,7 +162,9 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
           </label>
           <input
             id="confirmPassword"
+              name="confirmPassword"
             type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -153,44 +173,40 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="col-span-1">
             <label
               htmlFor="gender"
               className="mb-2 text-slate-900 font-medium inline-block"
             >
               Gender
             </label>
-            <select
+            <StyledSelect
               id="gender"
               value={gender}
-              onChange={(e) => setGender(e.target.value as "male" | "female")}
-              className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
-            >
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
+              options={[{ value: "male", label: "Male" }]}
+              placeholder="Choose gender"
+              onChange={(value) => setGender(value as "male" | "female")}
+            />
           </div>
 
-          <div>
+          <div className="col-span-2">
             <label
               htmlFor="hallId"
               className="mb-2 text-slate-900 font-medium inline-block"
             >
               Preferred hall
             </label>
-            <select
+            <StyledSelect
               id="hallId"
               value={hallId}
-              onChange={(e) => setHallId(e.target.value as HallId)}
-              className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
-            >
-              {HALLS.map((hall) => (
-                <option key={hall.id} value={hall.id}>
-                  {hall.name}
-                </option>
-              ))}
-            </select>
+              options={HALLS.filter((hall) => hall.active).map((hall) => ({
+                value: hall.id,
+                label: hall.name,
+              }))}
+              placeholder="Choose your preferred collection point"
+              onChange={(value) => setHallId(value as HallId)}
+            />
           </div>
         </div>
 
