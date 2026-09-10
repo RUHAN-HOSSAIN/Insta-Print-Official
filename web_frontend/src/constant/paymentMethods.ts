@@ -9,12 +9,12 @@ export interface PaymentMethod {
 export const paymentMethods: PaymentMethod[] = [
   {
     medium: "BKash",
-    number: "01773550052",
+    number: "01932066557",
     status: "available",
   },
   {
     medium: "Nagad",
-    number: "01XXXXXXX",
-    status: "unavailable",
+    number: "01932066557",
+    status: "available",
   },
 ];

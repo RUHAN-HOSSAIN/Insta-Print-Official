@@ -145,10 +145,10 @@ const Body = () => {
       if (files.some((file) => file.size > 15 * 1024 * 1024)) {
         return setFormError("Each final PDF must be 15 MB or smaller.");
       }
-      if (coverLetterEnabled && !loggedUser) {
+      if (coverLetterEnabled) {
         const cover = await createCoverLetterPdf(
-          coverLetterName.trim(),
-          coverLetterRoll,
+          loggedUser && user ? user.name : coverLetterName.trim(),
+          loggedUser && user ? String(user.roll) : coverLetterRoll,
         );
         files = [...files, cover];
         metadata = [
@@ -161,8 +161,7 @@ const Body = () => {
         return setFormError("Please wait until every PDF page count is ready.");
       const details = metadata as PrintFile[];
       const amount = roundPrintAmount(
-        details.reduce((sum, item) => sum + item.subtotal, 0) +
-          (coverLetterEnabled && loggedUser ? 1 : 0),
+        details.reduce((sum, item) => sum + item.subtotal, 0),
       );
       const totalPage = details.reduce(
         (sum, item) => sum + item.pages * item.copies,
