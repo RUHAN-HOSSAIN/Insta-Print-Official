@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 interface PrintSummaryProps {
   totalPrice: number;
@@ -70,15 +71,27 @@ const PrintSummary = ({
       </div>
     </div>
     {walletInsufficient && !formError && (
-      <p className="mb-3 text-sm text-red-600">Insufficient wallet balance.</p>
+      <p className="mb-3 text-sm md:text-base text-red-600">Insufficient wallet balance.</p>
     )}
-    {(formError || submitMessage) && (
-      <p
-        className={`mb-3 text-sm ${formError ? "text-red-600" : "text-green-600"}`}
+    {formError && (
+      <div
+        className="mb-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm md:text-base text-red-700 shadow-sm"
+        role="alert"
       >
-        {formError || submitMessage}
-      </p>
+        <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+        <p>{formError}</p>
+      </div>
     )}
+    {submitMessage && !formError && (
+      <div
+        className="mb-4 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm md:text-base text-emerald-700 shadow-sm"
+        role="status"
+      >
+        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+        <p>{submitMessage}</p>
+      </div>
+    )}
+    
     <div className="w-full mt-5">
       <div className="flex gap-3">
         <button

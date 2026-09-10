@@ -12,6 +12,7 @@ import PrintSummary from "../../components/print/PrintSummary";
 import PrinterStatus from "./PrinterStatus";
 import { createCoverLetterPdf } from "../../utils/createCoverLetterPdf";
 import { convertImageToPdf } from "../../utils/imageToPdf";
+import { reversePdfPages } from "../../utils/reversePdfPages";
 import type { PaymentMethod, PrintFile } from "../../types/PrintRequest";
 import { usePrintFiles } from "../../hooks/usePrintFiles";
 import { useAuth } from "../../context/useAuth";
@@ -156,6 +157,10 @@ const Body = () => {
           { name: cover.name, pages: 1, copies: 1, color: "mono", subtotal: 1 },
         ];
         setGeneratedCoverLetter(cover);
+      }
+      files = await Promise.all(files.map(reversePdfPages));
+      if (files.some((file) => file.size > 15 * 1024 * 1024)) {
+        return setFormError("Each final PDF must be 15 MB or smaller.");
       }
       if (metadata.some((item) => !item))
         return setFormError("Please wait until every PDF page count is ready.");
