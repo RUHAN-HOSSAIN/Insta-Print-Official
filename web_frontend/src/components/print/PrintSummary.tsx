@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import FieldWarning from "../feedback/FieldWarning";
 
 interface PrintSummaryProps {
   totalPrice: number;
@@ -8,8 +8,6 @@ interface PrintSummaryProps {
   transactionError: boolean;
   showTransactionInput: boolean;
   transactionInputDisabled: boolean;
-  formError: string;
-  submitMessage: string;
   isBusy: boolean;
   walletInsufficient: boolean;
   onTransactionChange: (value: string) => void;
@@ -27,8 +25,6 @@ const PrintSummary = ({
   transactionError,
   showTransactionInput,
   transactionInputDisabled,
-  formError,
-  submitMessage,
   isBusy,
   walletInsufficient,
   onTransactionChange,
@@ -40,25 +36,34 @@ const PrintSummary = ({
 }: PrintSummaryProps) => (
   <div className="flex-1 md:sticky top-24 self-start p-6 lg:p-10 shadow-[0px_0px_10px_rgba(0,0,0,0.2)] rounded-lg max-md:bg-linear-to-tr from-blue-600 to-blue-300 md:bg-white ">
     {children}
-    <div className="flex items-center justify-between gap-7 my-5 mr-2">
+    <div className="flex items-center justify-between gap-3 sm:gap-5 lg:gap-7 my-5 mr-2">
       {showTransactionInput && (
-        <div className={`shadow-[0px_0px_4px_rgba(0,0,0,0.2)] border border-gray-300 rounded-lg px-3 py-2 flex items-center justify-between gap-3 w-full bg-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-200 ${transactionInputDisabled ? "bg-slate-100 opacity-60" : ""}`}>
+        <div id="print-transaction" className="relative w-full">
+          <FieldWarning message={transactionError ? "Please enter your transaction ID." : undefined} />
+          <div className={`shadow-[0px_0px_4px_rgba(0,0,0,0.2)] border border-gray-300 rounded-lg px-3 py-2 flex items-center justify-between gap-3 w-full bg-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-200 ${transactionInputDisabled ? "bg-slate-100 opacity-60" : ""} ${transactionError ? "border-amber-500 ring-2 ring-amber-100" : ""}`}>
           <input
             type="text"
-            placeholder={transactionInputDisabled ? "Not required when using wallet" : "Transaction ID"}
+            placeholder={
+              transactionInputDisabled
+                ? "Txn-ID Not required for wallet payment"
+                : "Transaction ID"
+            }
             value={transactionId}
             onChange={(event) => onTransactionChange(event.target.value)}
             disabled={transactionInputDisabled}
             aria-invalid={transactionError}
-            className={`w-full focus:outline-none ${transactionError ? "text-red-700" : ""}`}
+            className="w-full focus:outline-none"
           />
+          </div>
         </div>
       )}
       {coverLetterToggle}
     </div>
-    {coverLetterFields}
+    <div id="print-cover-letter" className="relative">{coverLetterFields}</div>
     <div className="flex justify-between items-center text-2xl my-4 mx-2">
-      <h2 className="font-medium text-gray-900 max-md:text-white">Total Price</h2>
+      <h2 className="font-medium text-gray-900 max-md:text-white">
+        Total Price
+      </h2>
       <div className="font-bold flex items-baseline gap-2">
         {totalPrice !== roundedTotalPrice && (
           <h3 className="font-normal text-lg text-gray-500 max-md:text-gray-100 line-through">
@@ -70,28 +75,6 @@ const PrintSummary = ({
         </h1>
       </div>
     </div>
-    {walletInsufficient && !formError && (
-      <p className="mb-3 text-sm md:text-base text-red-600">Insufficient wallet balance.</p>
-    )}
-    {formError && (
-      <div
-        className="mb-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm md:text-base text-red-700 shadow-sm"
-        role="alert"
-      >
-        <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-        <p>{formError}</p>
-      </div>
-    )}
-    {submitMessage && !formError && (
-      <div
-        className="mb-4 flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm md:text-base text-emerald-700 shadow-sm"
-        role="status"
-      >
-        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-        <p>{submitMessage}</p>
-      </div>
-    )}
-    
     <div className="w-full mt-5">
       <div className="flex gap-3">
         <button
@@ -107,7 +90,11 @@ const PrintSummary = ({
           disabled={isBusy || walletInsufficient}
           className="flex-3 w-full rounded-lg bg-green-600 px-4 py-2 font-bold text-white transition-transform hover:scale-102 disabled:cursor-wait disabled:opacity-60"
         >
-          {isBusy ? "Preparing..." : walletInsufficient ? "Insufficient balance" : "Start Printing"}
+          {isBusy
+            ? "Preparing..."
+            : walletInsufficient
+              ? "Insufficient balance"
+              : "Start Printing"}
         </button>
       </div>
       {/* {generatedCoverLetter && (

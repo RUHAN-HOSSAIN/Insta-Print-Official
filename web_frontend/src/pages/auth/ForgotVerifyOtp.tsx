@@ -4,6 +4,7 @@ import type { AuthStep, ForgotSharedState } from "../../components/auth/AuthModa
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 import mainLogo from "../../assets/logo_main.webp";
+import { showFeedbackError } from "../../components/feedback/swalFeedback";
 
 type ForgotVerifyOtpProps = {
   onClose: () => void;
@@ -14,8 +15,8 @@ type ForgotVerifyOtpProps = {
 
 const ForgotVerifyOtp = ({ onGoTo, forgotData, onForgotDataChange }: ForgotVerifyOtpProps) => {
   const [otp, setOtp] = useState("");
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [, setError] = useState("");
+  const [, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [resendBusy, setResendBusy] = useState(false);
 
@@ -37,7 +38,8 @@ const ForgotVerifyOtp = ({ onGoTo, forgotData, onForgotDataChange }: ForgotVerif
       onForgotDataChange({ ...forgotData, resetToken: data.reset_token });
       onGoTo("reset-password");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid OTP");
+      setError("");
+      showFeedbackError(err instanceof Error ? err.message : "Invalid OTP");
     } finally {
       setBusy(false);
     }
@@ -58,9 +60,10 @@ const ForgotVerifyOtp = ({ onGoTo, forgotData, onForgotDataChange }: ForgotVerif
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? "Failed to resend");
 
-      setMessage("OTP resent successfully.");
+      setMessage("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to resend OTP");
+      setError("");
+      showFeedbackError(err instanceof Error ? err.message : "Unable to resend OTP");
     } finally {
       setResendBusy(false);
     }
@@ -95,17 +98,6 @@ const ForgotVerifyOtp = ({ onGoTo, forgotData, onForgotDataChange }: ForgotVerif
             className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
           />
         </div>
-
-        {message && (
-          <p className="mt-4 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-            {message}
-          </p>
-        )}
-        {error && (
-          <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        )}
 
         <button
           type="submit"

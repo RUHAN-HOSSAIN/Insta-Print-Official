@@ -1,6 +1,22 @@
 import { buildPrintFormData } from "../utils/buildPrintFormData";
 import type { PrintFormValues } from "../types/PrintRequest";
 
+export class PrintApiError extends Error {
+  readonly details: Record<string, unknown>;
+  readonly status: number;
+
+  constructor(
+    message: string,
+    details: Record<string, unknown> = {},
+    status = 500,
+  ) {
+    super(message);
+    this.details = details;
+    this.status = status;
+    this.name = "PrintApiError";
+  }
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 export async function submitPrintJob(
@@ -13,6 +29,10 @@ export async function submitPrintJob(
   printed?: boolean;
   message?: string;
   wallet_credited?: number;
+  wallet_balance?: number;
+  amount_paid?: number;
+  amount_required?: number;
+  overpaid?: boolean;
 }> {
   const formData = buildPrintFormData(formValues, files);
 
@@ -26,8 +46,13 @@ export async function submitPrintJob(
   });
 
   const result = await response.json().catch(() => ({}));
-  if (!response.ok)
-    throw new Error(result.error ?? `Print request failed (${response.status}).`);
+  if (!response.ok) {
+    throw new PrintApiError(
+      result.error ?? `Print request failed (${response.status}).`,
+      result,
+      response.status,
+    );
+  }
   return result;
 }
 

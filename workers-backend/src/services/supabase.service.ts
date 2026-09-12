@@ -23,11 +23,11 @@ export async function createWalletPrintJob(
   env: Env,
   input: PrintJobInput,
   userId: string,
-): Promise<{ si_no: number }> {
+): Promise<{ si_no: number; wallet_balance: number }> {
   const admin = getSupabaseAdmin(env);
 
   // Atomic deduction — balance কম থাকলে Postgres error throw করবে
-  const { error: rpcError } = await admin.rpc("deduct_wallet_balance", {
+  const { data: walletBalance, error: rpcError } = await admin.rpc("deduct_wallet_balance", {
     p_user_id: userId,
     p_amount: input.amountCalculated,
   });
@@ -56,7 +56,7 @@ export async function createWalletPrintJob(
 
     if (jobError || !job) throw new Error("Unable to create print job");
 
-    return { si_no: job.si_no };
+    return { si_no: job.si_no, wallet_balance: Number(walletBalance) };
   } catch (error) {
     await admin.rpc("add_wallet_balance", {
       p_user_id: userId,

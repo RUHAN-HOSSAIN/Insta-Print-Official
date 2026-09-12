@@ -281,3 +281,31 @@ export const LogoutIcon = ({ className, onClick }: IconProps) => {
     </svg>
   );
 };
+
+export const IdcardIcon = ({ className, onClick }: IconProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 -960 960 960"
+      className={`w-6 ${className}`}
+      onClick={onClick}
+      fill="currentColor"
+    >
+      <path d="M560-440h200v-80H560v80Zm0-120h200v-80H560v80ZM200-320h320v-22q0-45-44-71.5T360-440q-72 0-116 26.5T200-342v22Zm216.5-183.5Q440-527 440-560t-23.5-56.5Q393-640 360-640t-56.5 23.5Q280-593 280-560t23.5 56.5Q327-480 360-480t56.5-23.5ZM160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-480H160v480Zm0 0v-480 480Z" />
+    </svg>
+  );
+};
+
+export const GenderIcon = ({ className, onClick }: IconProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 -960 960 960"
+      className={`w-6 ${className}`}
+      onClick={onClick}
+      fill="currentColor"
+    >
+      <path d="M220-80v-300h-60v-220q0-33 23.5-56.5T240-680h120q33 0 56.5 23.5T440-600v220h-60v300H220Zm23.5-663.5Q220-767 220-800t23.5-56.5Q267-880 300-880t56.5 23.5Q380-833 380-800t-23.5 56.5Q333-720 300-720t-56.5-23.5ZM600-80v-240H480l102-306q8-26 29.5-40t48.5-14q27 0 48.5 14t29.5 40l102 306H720v240H600Zm3.5-663.5Q580-767 580-800t23.5-56.5Q627-880 660-880t56.5 23.5Q740-833 740-800t-23.5 56.5Q693-720 660-720t-56.5-23.5Z" />
+    </svg>
+  );
+};

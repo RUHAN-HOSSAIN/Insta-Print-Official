@@ -68,9 +68,7 @@ const SelectedFileCard = ({
     const isImage = file.type === "image/jpeg" || file.type === "image/png" ||
       /\.(jpe?g|png)$/i.test(file.name);
 
-    if (isImage) {
-      setPageCount(1);
-    } else {
+    if (!isImage) {
       getPdfPageCount(file)
         .then((count) => {
           if (isCurrentFile) setPageCount(count);
@@ -102,26 +100,30 @@ const SelectedFileCard = ({
     };
   }, [file, isCoverLetter]);
 
+  const isImage = file.type === "image/jpeg" || file.type === "image/png" ||
+    /\.(jpe?g|png)$/i.test(file.name);
+  const effectivePageCount = pageCount ?? (isImage ? 1 : null);
+
   // rates ready না হওয়া পর্যন্ত base rate ব্যবহার করো
   const unitPrice = isColor
     ? inkRates?.colorRate ?? BASE_COLOR
     : inkRates?.bwRate ?? BASE_BW;
   const isDynamicPrice = inkRates?.isDynamic ?? false;
 
-  const total = isCoverLetter ? 1 : Math.round((pageCount ?? 0) * copies * unitPrice * 100) / 100;
+  const total = isCoverLetter ? 1 : Math.round((effectivePageCount ?? 0) * copies * unitPrice * 100) / 100;
 
   useEffect(() => {
-    if (isCoverLetter || pageCount !== null) onTotalChange(index, total);
-    if (pageCount !== null || isCoverLetter) {
+    if (isCoverLetter || effectivePageCount !== null) onTotalChange(index, total);
+    if (effectivePageCount !== null || isCoverLetter) {
       onDetailsChange(index, {
         name: file.name,
-        pages: pageCount ?? 1,
+        pages: effectivePageCount ?? 1,
         copies: isCoverLetter ? 1 : copies,
         color: isCoverLetter ? "mono" : isColor ? "color" : "mono",
         subtotal: total,
       });
     }
-  }, [copies, file.name, index, isColor, isCoverLetter, onDetailsChange, onTotalChange, pageCount, total]);
+  }, [copies, effectivePageCount, file.name, index, isColor, isCoverLetter, onDetailsChange, onTotalChange, total]);
 
   const decreaseCopies = () => setCopies((c) => Math.max(1, c - 1));
   const increaseCopies = () => setCopies((c) => Math.min(20, c + 1));
@@ -135,7 +137,7 @@ const SelectedFileCard = ({
         </h2>
         <div className="flex items-center gap-2 md:gap-5 shrink-0">
           <span className="text-gray-700 text-[10px] md:text-[13px] font-semibold shadow-[0px_0px_10px_rgba(0,0,0,0.1)] px-1.5 py-0.5 md:px-3 md:py-1 rounded-full border border-gray-200">
-            {pageCountError ? "Invalid file" : pageCount === null ? "Reading..." : `${pageCount} page${pageCount === 1 ? "" : "s"}`}
+            {pageCountError ? "Invalid file" : effectivePageCount === null ? "Reading..." : `${effectivePageCount} page${effectivePageCount === 1 ? "" : "s"}`}
           </span>
           <button type="button" onClick={() => onRemove(index)} className="hover:scale-107 transition-transform">
             <CloseIcon className="text-white bg-red-600 rounded w-5 h-5 md:w-6 md:h-6" />
@@ -169,7 +171,7 @@ const SelectedFileCard = ({
       {/* Price summary — dynamic হলে yellow */}
       <div className="mt-4 pt-3 px-1 flex justify-between items-center border-t border-gray-300 text-gray-600 text-sm md:text-base font-medium">
         <span>
-          {pageCount === null ? "Reading pages..." : `${pageCount}p`} &times; {isCoverLetter ? "Cover letter" : isColor ? "Color" : "B&W"} &times; {isCoverLetter ? "1" : copies}
+          {effectivePageCount === null ? "Reading pages..." : `${effectivePageCount}p`} &times; {isCoverLetter ? "Cover letter" : isColor ? "Color" : "B&W"} &times; {isCoverLetter ? "1" : copies}
         </span>
         <div className="flex items-baseline gap-2 text-right">
           {!isCoverLetter && inkRates?.inkMessage && (
@@ -182,7 +184,7 @@ const SelectedFileCard = ({
               !isCoverLetter && isDynamicPrice ? "text-yellow-500" : "text-gray-900"
             }`}
           >
-            ৳ {pageCount === null ? "-" : isDynamicPrice && !isCoverLetter ? total.toFixed(2) : total}
+            ৳ {effectivePageCount === null ? "-" : isDynamicPrice && !isCoverLetter ? total.toFixed(2) : total}
           </span>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
 import type { AuthStep } from "../../components/auth/AuthModal";
+import { showFeedbackError, showFeedbackSuccess } from "../../components/feedback/swalFeedback";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
@@ -22,7 +23,7 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   const validate = (): string | null => {
@@ -41,7 +42,7 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
 
     const validationError = validate();
     if (validationError) {
-      setError(validationError);
+      showFeedbackError(validationError);
       return;
     }
 
@@ -61,9 +62,12 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
         throw new Error("Invalid response from server");
 
       login(data.token, data.user, rememberMe);
+      await showFeedbackSuccess("Welcome back", "You are now signed in.");
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to log in");
+      const message = err instanceof Error ? err.message : "Unable to log in";
+      setError("");
+      showFeedbackError(message);
     } finally {
       setBusy(false);
     }
@@ -179,12 +183,6 @@ const Login = ({ onClose, onGoTo }: LoginProps) => {
             Forgot password?
           </button>
         </div>
-
-        {error && (
-          <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        )}
 
         <button
           type="submit"

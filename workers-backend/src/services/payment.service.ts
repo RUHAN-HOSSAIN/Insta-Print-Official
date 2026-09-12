@@ -18,6 +18,8 @@ export class PaymentStateError extends Error {
     message: string,
     public readonly code:
       | "PAYMENT_NOT_FOUND"
+      | "PAYMENT_ALREADY_USED"
+      | "PAYMENT_PROCESSING"
       | "PAYMENT_CLAIM_FAILED"
       | "PAYMENT_TRANSITION_FAILED",
   ) {
@@ -40,11 +42,27 @@ export async function findUnusedPayment(
     .from("mfs_transactions")
     .select("id, provider, transaction_type, amount, trx_id, counterparty_identifier, status, use_for")
     .eq("trx_id", txnId.trim())
-    .eq("status", "not_used")
     .maybeSingle();
 
   if (error) throw new Error("Unable to verify payment");
-  if (!data) throw new Error("Payment not found or already used");
+  if (!data) {
+    throw new PaymentStateError(
+      "Your payment information has not reached us yet. Please try again after some time.",
+      "PAYMENT_NOT_FOUND",
+    );
+  }
+  if (data.status === "used") {
+    throw new PaymentStateError(
+      "Printing has already been completed using this payment.",
+      "PAYMENT_ALREADY_USED",
+    );
+  }
+  if (data.status !== "not_used" || data.use_for !== null) {
+    throw new PaymentStateError(
+      "This payment is already being processed. Please try again later.",
+      "PAYMENT_PROCESSING",
+    );
+  }
 
   // transaction_type check — case insensitive, multiple format support
   if (!VALID_RECEIVE_TYPES.includes(data.transaction_type)) {
@@ -74,12 +92,16 @@ export async function claimPayment(
       "PAYMENT_NOT_FOUND",
     );
   }
+  if (candidate.status === "used") {
+    throw new PaymentStateError(
+      "Printing has already been completed using this payment.",
+      "PAYMENT_ALREADY_USED",
+    );
+  }
   if (candidate.status !== "not_used" || candidate.use_for !== null) {
     throw new PaymentStateError(
-      candidate.status === "processing"
-        ? "This payment is already being processed. Please try again later."
-        : "This payment has already been used.",
-      "PAYMENT_CLAIM_FAILED",
+      "This payment is already being processed. Please try again later.",
+      "PAYMENT_PROCESSING",
     );
   }
 

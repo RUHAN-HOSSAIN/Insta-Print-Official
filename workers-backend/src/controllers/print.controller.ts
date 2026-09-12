@@ -2,7 +2,7 @@ import { HALLS, HallId } from "../config/constants";
 import { Env } from "../types";
 import { printFile } from "../services/epson.service";
 import { verifyToken, getSupabaseAdmin } from "../services/auth.service";
-import { claimPayment, findUnusedPayment, releasePayment } from "../services/payment.service";
+import { claimPayment, findUnusedPayment, PaymentStateError, releasePayment } from "../services/payment.service";
 import { createDirectPrintJobReservation, createWalletPrintJob, deletePrintJobReservation, updatePrintJobStatus } from "../services/supabase.service";
 
 type FileSetting = { copies: number; color: "mono" | "color" };
@@ -109,7 +109,7 @@ export async function submitPrintJob(request: Request, env: Env): Promise<Respon
       }
       await updatePrintJobStatus(env, jobSiNo, true, jobIds, "completed", null);
       walletAmountReserved = 0;
-      return Response.json({ status: "queued", printed: true, totalFiles: files.length, printJobSiNo: jobSiNo });
+      return Response.json({ status: "queued", printed: true, totalFiles: files.length, printJobSiNo: jobSiNo, amount_paid: input.amount, amount_required: input.amount, wallet_balance: job.wallet_balance });
     }
 
     const txnId = String(formData.get("txn_id") ?? "").trim();
@@ -153,7 +153,7 @@ export async function submitPrintJob(request: Request, env: Env): Promise<Respon
       p_wallet_credit: difference > 0 ? difference : 0,
     });
     if (error) throw new Error(error.message);
-    return Response.json({ status: "queued", printed: true, totalFiles: files.length, printJobSiNo: jobSiNo, wallet_credited: difference > 0 && userId ? difference : 0, ...(difference > 0 && userId ? { wallet_balance: Number(walletBalance) } : {}) });
+    return Response.json({ status: "queued", printed: true, totalFiles: files.length, printJobSiNo: jobSiNo, amount_paid: amountPaid, amount_required: input.amount, overpaid: difference > 0, wallet_credited: difference > 0 && userId ? difference : 0, ...(difference > 0 && userId ? { wallet_balance: Number(walletBalance) } : {}) });
   } catch (error) {
     if (jobSiNo !== null) {
       try { await updatePrintJobStatus(env, jobSiNo, false, undefined, "failed", error instanceof Error ? error.message : "Print job failed"); } catch { /* preserve original error */ }
@@ -179,9 +179,23 @@ export async function submitPrintJob(request: Request, env: Env): Promise<Respon
         await getSupabaseAdmin(env).rpc("add_wallet_balance", { p_user_id: authenticatedUserId, p_amount: walletAmountReserved });
       } catch { /* surface the original print error */ }
     }
-    const message = error instanceof Error ? error.message : "Print job failed";
-    const status = error instanceof PrintRequestError ? error.status : 500;
-    const code = error instanceof PrintRequestError ? error.code : "PRINT_JOB_FAILED";
+    const message = error instanceof PaymentStateError
+      ? error.message
+      : error instanceof PrintRequestError
+        ? error.message
+        : "Server error while processing your print request. Please try again after some time.";
+    const status = error instanceof PrintRequestError
+      ? error.status
+      : error instanceof PaymentStateError && (error.code === "PAYMENT_NOT_FOUND" || error.code === "PAYMENT_ALREADY_USED")
+        ? 400
+        : error instanceof PaymentStateError && error.code === "PAYMENT_PROCESSING"
+          ? 409
+          : 500;
+    const code = error instanceof PrintRequestError
+      ? error.code
+      : error instanceof PaymentStateError
+        ? error.code
+        : "PRINT_JOB_FAILED";
     return errorResponse(message, status, { code, printed: false });
   }
 }

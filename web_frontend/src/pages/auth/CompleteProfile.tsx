@@ -10,6 +10,10 @@ const API_BASE_URL =
 
 import mainLogo from "../../assets/logo_main.webp";
 import SignupProgress from "../../components/auth/SignupProgress";
+import {
+  showFeedbackError,
+  showFeedbackSuccess,
+} from "../../components/feedback/swalFeedback";
 
 type CompleteProfileProps = {
   onClose: () => void;
@@ -23,9 +27,9 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [gender, setGender] = useState<"male" | "female">("male");
+  const [gender, setGender] = useState<"Male" | "Female">("Male");
   const [hallId, setHallId] = useState<HallId>(HALLS[0].id);
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -33,12 +37,14 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
     setError("");
 
     if (!/^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(password)) {
-      return setError(
+      showFeedbackError(
         "Password must be at least 6 characters with one letter and one digit.",
       );
+      return;
     }
     if (password !== confirmPassword) {
-      return setError("Passwords do not match.");
+      showFeedbackError("Passwords do not match.");
+      return;
     }
 
     setBusy(true);
@@ -64,9 +70,14 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
         throw new Error("Invalid response from server");
 
       login(data.token, data.user);
+      await showFeedbackSuccess(
+        "Account created",
+        "Your profile is ready. Welcome to Insta Print.",
+      );
       onClose();
     } catch (err) {
-      setError(
+      setError("");
+      showFeedbackError(
         err instanceof Error ? err.message : "Unable to complete signup",
       );
     } finally {
@@ -102,7 +113,7 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your full name"
+            placeholder="Please enter your full name"
             className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
           />
         </div>
@@ -162,9 +173,9 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
           </label>
           <input
             id="confirmPassword"
-              name="confirmPassword"
+            name="confirmPassword"
             type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
+            autoComplete="new-password"
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -184,9 +195,12 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
             <StyledSelect
               id="gender"
               value={gender}
-              options={[{ value: "male", label: "Male" }]}
+              options={[
+                { value: "Male", label: "Male" },
+                { value: "Female", label: "Female" },
+              ]}
               placeholder="Choose gender"
-              onChange={(value) => setGender(value as "male" | "female")}
+              onChange={(value) => setGender(value as "Male" | "Female")}
             />
           </div>
 
@@ -209,12 +223,6 @@ const CompleteProfile = ({ onClose, signupData }: CompleteProfileProps) => {
             />
           </div>
         </div>
-
-        {error && (
-          <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        )}
 
         <button
           type="submit"

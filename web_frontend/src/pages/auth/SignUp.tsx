@@ -9,6 +9,7 @@ const API_BASE_URL =
 
 import mainLogo from "../../assets/logo_main.webp";
 import SignupProgress from "../../components/auth/SignupProgress";
+import { showFeedbackError } from "../../components/feedback/swalFeedback";
 
 type SignUpProps = {
   onClose: () => void;
@@ -18,7 +19,7 @@ type SignUpProps = {
 };
 
 const SignUp = ({ onGoTo, signupData, onSignupDataChange }: SignUpProps) => {
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -28,10 +29,12 @@ const SignUp = ({ onGoTo, signupData, onSignupDataChange }: SignUpProps) => {
     const { roll, email } = signupData;
 
     if (!/^\d{7}$/.test(roll)) {
-      return setError("Student ID must be exactly 7 digits.");
+      showFeedbackError("Student ID must be exactly 7 digits.");
+      return;
     }
     if (!email.trim() || !email.includes("@")) {
-      return setError("Please enter a valid email address.");
+      showFeedbackError("Please enter a valid email address.");
+      return;
     }
 
     setBusy(true);
@@ -48,7 +51,8 @@ const SignUp = ({ onGoTo, signupData, onSignupDataChange }: SignUpProps) => {
 
       onGoTo("otp");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to send OTP");
+      setError("");
+      showFeedbackError(err instanceof Error ? err.message : "Unable to send OTP");
     } finally {
       setBusy(false);
     }
@@ -110,12 +114,6 @@ const SignUp = ({ onGoTo, signupData, onSignupDataChange }: SignUpProps) => {
             className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
           />
         </div>
-
-        {error && (
-          <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        )}
 
         <button
           type="submit"

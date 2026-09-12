@@ -7,7 +7,7 @@ export interface User {
   roll: number;
   name: string;
   email: string;               // ruet_stdn_mail
-  gender: "male" | "female";
+  gender: "Male" | "Female";
   wallet_balance: number;
   preferred_hall_id: string | null;
 }

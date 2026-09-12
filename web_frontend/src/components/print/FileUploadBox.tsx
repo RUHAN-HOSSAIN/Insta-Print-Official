@@ -1,6 +1,7 @@
 // components/print/FileUploadBox.tsx
 import { useRef } from "react";
 import { UploadIcon } from "../../assets/icons/Icons";
+import FieldWarning from "../feedback/FieldWarning";
 
 interface FileUploadBoxProps {
   onFilesSelected: (files: File[]) => void;
@@ -8,6 +9,8 @@ interface FileUploadBoxProps {
   onDragOver: (e: React.DragEvent) => void;
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent) => void;
+  hasError?: boolean;
+  errorMessage?: string;
 }
 
 const FileUploadBox = ({
@@ -16,6 +19,8 @@ const FileUploadBox = ({
   onDragOver,
   onDragLeave,
   onDrop,
+  hasError = false,
+  errorMessage,
 }: FileUploadBoxProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -34,13 +39,14 @@ const FileUploadBox = ({
         ${
           isDragging
             ? "border-blue-700 bg-slate-50"
-            : "border-blue-600 bg-white"
+            : hasError ? "border-amber-500 bg-amber-50/20" : "border-blue-600 bg-white"
         }`}
       onClick={handleClick}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
+      <FieldWarning message={hasError ? errorMessage : undefined} />
       {/* Floating PDF card */}
       <div className="float-page absolute -top-12 -right-6 lg:right-5 lg:w-20 lg:h-26 bg-white rounded-lg shadow-md p-3 flex flex-col gap-2 border border-gray-300">
         <div className="w-1/2 h-1.5 rounded bg-purple-500" />

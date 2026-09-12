@@ -21,7 +21,7 @@ export async function createTopUpRequest(
   env: Env,
   userId: string,
   txnId: string,
-): Promise<number> {
+): Promise<{ balance: number; amount: number }> {
   const admin = getSupabaseAdmin(env);
 
   const payment = await claimPayment(env, txnId);
@@ -35,7 +35,7 @@ export async function createTopUpRequest(
 
     if (error) throw new Error(error.message);
 
-    return Number(newBalance);
+    return { balance: Number(newBalance), amount: Number(payment.amount) };
   } catch (error) {
     await releasePayment(env, payment.id);
     throw error;

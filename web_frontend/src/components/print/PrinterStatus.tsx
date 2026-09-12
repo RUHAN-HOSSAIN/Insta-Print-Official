@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { HALLS } from "../../constant/halls";
 import { RefreshIcon } from "../../assets/icons/Icons";
-import StyledSelect from "../../components/common/StyledSelect";
+import StyledSelect from "../common/StyledSelect";
+import FieldWarning from "../feedback/FieldWarning";
 
 const collectionPoints = HALLS.filter((hall) => hall.active);
 
@@ -12,11 +13,13 @@ type PrinterStatusResponse = { connected?: boolean; error?: string };
 interface PrinterStatusProps {
   onSelectionChange?: (hallId: string, online: boolean) => void;
   hasError?: boolean;
+  errorMessage?: string;
 }
 
 const PrinterStatus = ({
   onSelectionChange,
   hasError = false,
+  errorMessage,
 }: PrinterStatusProps) => {
   const [selectedPoint, setSelectedPoint] = useState("");
   const [printerStatus, setPrinterStatus] = useState<{
@@ -50,12 +53,11 @@ const PrinterStatus = ({
           throw new Error(data.error ?? "Unable to read printer status");
         return data;
       })
-      .then((data) =>
-        setPrinterStatus({
-          point: selectedPoint,
-          connected: data.connected === true,
-        }),
-      )
+      .then((data) => {
+        const connected = data.connected === true;
+        setPrinterStatus({ point: selectedPoint, connected });
+        onSelectionChange?.(selectedPoint, connected);
+      })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError")
           return;
@@ -63,11 +65,12 @@ const PrinterStatus = ({
           point: selectedPoint,
           connected: false,
         });
+        onSelectionChange?.(selectedPoint, false);
       })
       .finally(() => setIsRefreshing(false));
 
     return () => controller.abort();
-  }, [refreshKey, selectedPoint]);
+  }, [onSelectionChange, refreshKey, selectedPoint]);
 
   const isLoading = Boolean(
     selectedPoint && printerStatus?.point !== selectedPoint,
@@ -80,7 +83,7 @@ const PrinterStatus = ({
       ? "Online"
       : selectedPoint
         ? "Offline"
-        : "Select a hall";
+        : "Select hall";
   const statusClasses = isLoading
     ? "bg-amber-50 text-amber-700"
     : displayedConnection
@@ -92,15 +95,11 @@ const PrinterStatus = ({
       ? "bg-emerald-500"
       : "bg-red-500";
 
-  useEffect(() => {
-    onSelectionChange?.(selectedPoint, displayedConnection === true);
-  }, [displayedConnection, onSelectionChange, selectedPoint]);
-
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.08)] p-5 md:p-6 max-md:mb-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="font-spaceG text-lg sm:text-xl font-bold text-blue-600">
+          <h2 className="font-spaceG text-lg sm:text-xl font-bold text-blue-600 text-shadow-xs">
             Collection point
           </h2>
         </div>
@@ -114,7 +113,8 @@ const PrinterStatus = ({
         </span>
       </div>
 
-      <label className="flex flex-col gap-3 font-roboto font-semibold text-slate-700">
+      <label className="relative flex flex-col gap-3 font-roboto font-semibold text-slate-700">
+        
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-sm sm:text-base">Select a hall</h2>
           <button
@@ -130,6 +130,7 @@ const PrinterStatus = ({
             />
           </button>
         </div>
+        <FieldWarning message={hasError ? errorMessage : undefined} />
         <StyledSelect
           id="collection-point"
           value={selectedPoint}
@@ -140,6 +141,7 @@ const PrinterStatus = ({
           placeholder="Choose a collection point"
           onChange={(value) => {
             setSelectedPoint(value);
+            setPrinterStatus(null);
             onSelectionChange?.(value, false);
           }}
           error={hasError}

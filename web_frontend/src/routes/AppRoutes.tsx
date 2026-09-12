@@ -14,6 +14,8 @@ import TermCondition from "../pages/legal/TermCondition";
 import RefundReturn from "../pages/legal/RefundReturn";
 import CancelPolicy from "../pages/legal/CancelPolicy";
 
+import MobAppRedirect from "./MobAppRedirect";
+
 // Auth pages
 
 // Dashboard pages
@@ -51,6 +53,8 @@ const AppRoutes = () => {
         <Route path="/terms-conditions" element={<TermCondition />} />
         <Route path="/refund-return" element={<RefundReturn />} />
         <Route path="/cancel-policy" element={<CancelPolicy />} />
+
+        <Route path="/app" element={<MobAppRedirect />} />
 
         {/* Protected */}
         <Route element={<ProtectedRoute />}>

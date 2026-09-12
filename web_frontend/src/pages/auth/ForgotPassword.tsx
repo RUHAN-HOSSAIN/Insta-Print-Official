@@ -4,6 +4,7 @@ import type { AuthStep, ForgotSharedState } from "../../components/auth/AuthModa
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 import mainLogo from "../../assets/logo_main.webp";
+import { showFeedbackError } from "../../components/feedback/swalFeedback";
 
 type ForgotPasswordProps = {
   onClose: () => void;
@@ -13,7 +14,7 @@ type ForgotPasswordProps = {
 };
 
 const ForgotPassword = ({ onGoTo, forgotData, onForgotDataChange }: ForgotPasswordProps) => {
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -33,7 +34,8 @@ const ForgotPassword = ({ onGoTo, forgotData, onForgotDataChange }: ForgotPasswo
 
       onGoTo("forgot-otp");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to send OTP");
+      setError("");
+      showFeedbackError(err instanceof Error ? err.message : "Unable to send OTP");
     } finally {
       setBusy(false);
     }
@@ -69,12 +71,6 @@ const ForgotPassword = ({ onGoTo, forgotData, onForgotDataChange }: ForgotPasswo
             className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
           />
         </div>
-
-        {error && (
-          <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        )}
 
         <button
           type="submit"

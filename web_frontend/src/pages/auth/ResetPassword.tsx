@@ -5,6 +5,7 @@ import type { AuthStep, ForgotSharedState } from "../../components/auth/AuthModa
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
 import mainLogo from "../../assets/logo_main.webp";
+import { showFeedbackError, showFeedbackSuccess } from "../../components/feedback/swalFeedback";
 
 type ResetPasswordProps = {
   onClose: () => void;
@@ -16,7 +17,7 @@ const ResetPassword = ({ onGoTo, forgotData }: ResetPasswordProps) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -24,10 +25,12 @@ const ResetPassword = ({ onGoTo, forgotData }: ResetPasswordProps) => {
     setError("");
 
     if (!/^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(password)) {
-      return setError("Password must be at least 6 characters with one letter and one digit.");
+      showFeedbackError("Password must be at least 6 characters with one letter and one digit.");
+      return;
     }
     if (password !== confirmPassword) {
-      return setError("Passwords do not match.");
+      showFeedbackError("Passwords do not match.");
+      return;
     }
 
     setBusy(true);
@@ -44,9 +47,11 @@ const ResetPassword = ({ onGoTo, forgotData }: ResetPasswordProps) => {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? "Reset failed");
 
+      await showFeedbackSuccess("Password reset successful", "You can now log in with your new password.");
       onGoTo("login");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to reset password");
+      setError("");
+      showFeedbackError(err instanceof Error ? err.message : "Unable to reset password");
     } finally {
       setBusy(false);
     }
@@ -114,12 +119,6 @@ const ResetPassword = ({ onGoTo, forgotData }: ResetPasswordProps) => {
             className="px-3 py-2.5 text-sm text-slate-900 rounded-md bg-white w-full outline-1 -outline-offset-1 outline-slate-300 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-600"
           />
         </div>
-
-        {error && (
-          <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        )}
 
         <button
           type="submit"

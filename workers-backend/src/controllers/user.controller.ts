@@ -95,11 +95,12 @@ export async function handleTopUp(c: Context<{ Bindings: Env }>) {
 
     if (!txn_id?.trim()) return err(c, "Transaction ID is required.");
 
-    const newBalance = await createTopUpRequest(c.env, userId, txn_id);
+    const topUp = await createTopUpRequest(c.env, userId, txn_id);
 
     return ok(c, {
       message: "Wallet topped up successfully.",
-      wallet_balance: newBalance,
+      wallet_balance: topUp.balance,
+      amount_added: topUp.amount,
     });
   } catch (error) {
     return err(c, error instanceof Error ? error.message : "Top-up failed");
