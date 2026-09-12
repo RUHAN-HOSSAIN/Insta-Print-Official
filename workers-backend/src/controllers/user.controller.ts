@@ -87,7 +87,7 @@ export async function handleUpdateHall(c: Context<{ Bindings: Env }>) {
 }
 
 // ─── POST /api/user/topup ─────────────────────────────────────────────────────
-// Body: { amount: number, txn_id: string }
+// Body: { txn_id: string }. The amount comes from the verified MFS transaction.
 export async function handleTopUp(c: Context<{ Bindings: Env }>) {
   try {
     const { userId } = await verifyToken(c.env, c.req.header("Authorization"));

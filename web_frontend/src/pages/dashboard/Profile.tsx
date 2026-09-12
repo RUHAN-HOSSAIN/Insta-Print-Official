@@ -1,216 +1,114 @@
 import { useState } from "react";
+import { ArrowLeft, Edit3, LockKeyhole, MapPin, Save, UserRound, X } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
 import { HALLS, type HallId } from "../../constant/halls";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8787";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-// Editable fields: name, password, preferred_hall_id
-// Read-only fields: roll, email, gender, wallet_balance, account_created_date
-type EditableField = "name" | "password" | "hall";
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
 const Profile = () => {
   const { user, token, updateUser } = useAuth();
-
-  // কোন field এখন edit mode এ আছে (null = কোনোটাই না)
-  const [editing, setEditing] = useState<EditableField | null>(null);
-
-  // Edit এর temporary values
+  const [editing, setEditing] = useState(false);
   const [newName, setNewName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [newHallId, setNewHallId] = useState<HallId>(HALLS[0].id);
-
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  if (!user) return null; // ProtectedRoute থাকায় এটা normally হবে না
+  if (!user) return null;
 
-  // Edit শুরু করো — field এর current value দিয়ে pre-fill
-  const startEdit = (field: EditableField) => {
+  const startEdit = () => {
     setError("");
-    if (field === "name") setNewName(user.name);
-    if (field === "hall") setNewHallId((user.preferred_hall_id as HallId) ?? HALLS[0].id);
-    if (field === "password") { setNewPassword(""); setConfirmPassword(""); }
-    setEditing(field);
+    setNewName(user.name);
+    setNewHallId((user.preferred_hall_id as HallId) ?? HALLS[0].id);
+    setNewPassword("");
+    setConfirmPassword("");
+    setEditing(true);
   };
 
   const cancelEdit = () => {
-    setEditing(null);
+    setEditing(false);
     setError("");
   };
 
-  // ── Save name ──
-  const saveName = async () => {
+  const handleSave = async () => {
     if (!newName.trim()) return setError("Name cannot be empty.");
-    setBusy(true);
-    setError("");
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/user/update-name`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name: newName.trim() }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? "Failed to update name");
-
-      updateUser({ name: newName.trim() }); // AuthContext + localStorage update
-      setEditing(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update name");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  // ── Save password ──
-  const savePassword = async () => {
-    if (!/^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(newPassword)) {
+    if (newPassword && !/^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(newPassword)) {
       return setError("Password must be at least 6 characters with one letter and one digit.");
     }
-    if (newPassword !== confirmPassword) {
-      return setError("Passwords do not match.");
-    }
+    if (newPassword !== confirmPassword) return setError("Passwords do not match.");
 
     setBusy(true);
     setError("");
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/user/update-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ password: newPassword }),
-        // Server: updated_at ও update করবে
+      const nameResponse = await fetch(`${API_BASE_URL}/api/user/update-name`, {
+        method: "POST", headers, body: JSON.stringify({ name: newName.trim() }),
       });
+      const nameData = await nameResponse.json().catch(() => ({}));
+      if (!nameResponse.ok) throw new Error(nameData.error ?? "Failed to update name");
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? "Failed to update password");
+      const hallResponse = await fetch(`${API_BASE_URL}/api/user/update-hall`, {
+        method: "POST", headers, body: JSON.stringify({ preferred_hall_id: newHallId }),
+      });
+      const hallData = await hallResponse.json().catch(() => ({}));
+      if (!hallResponse.ok) throw new Error(hallData.error ?? "Failed to update hall");
 
-      setEditing(null);
+      if (newPassword) {
+        const passwordResponse = await fetch(`${API_BASE_URL}/api/user/update-password`, {
+          method: "POST", headers, body: JSON.stringify({ password: newPassword }),
+        });
+        const passwordData = await passwordResponse.json().catch(() => ({}));
+        if (!passwordResponse.ok) throw new Error(passwordData.error ?? "Failed to update password");
+      }
+
+      updateUser({ name: newName.trim(), preferred_hall_id: newHallId });
+      setEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update password");
+      setError(err instanceof Error ? err.message : "Unable to update profile");
     } finally {
       setBusy(false);
     }
   };
 
-  // ── Save preferred hall ──
-  const saveHall = async () => {
-    setBusy(true);
-    setError("");
+  const hallName = HALLS.find((hall) => hall.id === user.preferred_hall_id)?.name ?? "Not set";
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/user/update-hall`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ preferred_hall_id: newHallId }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error ?? "Failed to update hall");
-
-      updateUser({ preferred_hall_id: newHallId }); // AuthContext update
-      setEditing(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to update hall");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleSave = () => {
-    if (editing === "name") return saveName();
-    if (editing === "password") return savePassword();
-    if (editing === "hall") return saveHall();
-  };
-
-  // ── Render ──
-  // Available:
-  //   READ-ONLY:  user.roll, user.ruet_stdn_mail, user.gender,
-  //               user.wallet_balance, user.account_creted_date
-  //   EDITABLE:   user.name → startEdit("name")
-  //               user.preferreable_hall_id → startEdit("hall")
-  //               password → startEdit("password")
-  //   EDIT STATE: editing, newName, setNewName, newPassword, setNewPassword,
-  //               confirmPassword, setConfirmPassword, newHallId, setNewHallId,
-  //               error, busy, handleSave, cancelEdit, HALLS
   return (
-    <div>
-      {/* তোমার UI এখানে */}
+    <main className="min-h-screen bg-[#f5f8fc] px-4 pb-16 pt-(--header-height,72px) font-spaceG text-slate-900 sm:px-8">
+      <div className="mx-auto max-w-3xl">
+        <div className="flex items-center justify-between border-b border-slate-200 py-6">
+          <div className="flex items-center gap-3"><ArrowLeft className="h-5 w-5" /><span className="text-base font-semibold text-slate-500">Dashboard / Profile</span></div>
+          <button type="button" onClick={editing ? cancelEdit : startEdit} className="flex items-center gap-2 rounded-full bg-white px-4 py-2 font-semibold text-[#1967d2] shadow-sm transition hover:shadow-md">
+            {editing ? <X className="h-5 w-5" /> : <Edit3 className="h-5 w-5" />}{editing ? "Cancel" : "Edit profile"}
+          </button>
+        </div>
 
-      {/* Read-only fields */}
-      <p>Roll: {user.roll}</p>
-      <p>Email: {user.email}</p>
-      <p>Gender: {user.gender}</p>
-      <p>Wallet: ৳ {user.wallet_balance.toFixed(2)}</p>
-      {/* <p>Joined: {new Date(user.created_at).toLocaleDateString()}</p> */}
+        <section className="mt-8 rounded-[28px] bg-white px-5 py-8 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.35)] sm:px-12">
+          <div className="flex flex-col items-center text-center">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#d8f0dc] text-[#31954a]"><UserRound className="h-12 w-12" /></div>
+            <h1 className="mt-5 text-3xl font-bold">{user.name}</h1>
+            <p className="mt-2 text-lg text-slate-500">{user.email}</p>
+          </div>
 
-      {/* Editable: Name */}
-      <div>
-        <p>Name: {user.name}</p>
-        {editing !== "name" && (
-          <button type="button" onClick={() => startEdit("name")}>Edit</button>
-        )}
-        {editing === "name" && (
-          <>
-            <input value={newName} onChange={(e) => setNewName(e.target.value)} />
-            <button type="button" onClick={handleSave} disabled={busy}>Save</button>
-            <button type="button" onClick={cancelEdit}>Cancel</button>
-          </>
-        )}
+          {editing ? (
+            <div className="mt-10 space-y-5">
+              <label className="block"><span className="mb-2 block text-base font-semibold text-slate-600">Full name</span><input value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-lg outline-none focus:border-[#31954a]" /></label>
+              <label className="block"><span className="mb-2 block text-base font-semibold text-slate-600">Preferred destination</span><select value={newHallId} onChange={(e) => setNewHallId(e.target.value as HallId)} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-lg outline-none focus:border-[#31954a]">{HALLS.map((hall) => <option key={hall.id} value={hall.id}>{hall.name}</option>)}</select></label>
+              <div className="grid gap-5 sm:grid-cols-2"><label className="block"><span className="mb-2 block text-base font-semibold text-slate-600">New password</span><input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Leave blank to keep it" className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-lg outline-none focus:border-[#31954a]" /></label><label className="block"><span className="mb-2 block text-base font-semibold text-slate-600">Confirm password</span><input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat new password" className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-lg outline-none focus:border-[#31954a]" /></label></div>
+              {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-base font-medium text-red-600">{error}</p>}
+              <button type="button" onClick={handleSave} disabled={busy} className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#218b49] px-5 py-4 text-lg font-bold text-white shadow-lg shadow-green-900/15 transition hover:bg-[#176d38] disabled:opacity-60"><Save className="h-5 w-5" />{busy ? "Saving changes..." : "Save all changes"}</button>
+            </div>
+          ) : (
+            <div className="mt-10 divide-y divide-slate-200 rounded-2xl bg-[#fbfcfe] px-5 sm:px-8">
+              <div className="flex items-center gap-5 py-5"><div className="rounded-2xl bg-[#eaf5ed] p-4 text-[#31954a]"><UserRound className="h-7 w-7" /></div><div><p className="text-lg text-slate-500">Student ID</p><p className="text-2xl font-bold">{user.roll}</p></div></div>
+              <div className="flex items-center gap-5 py-5"><div className="rounded-2xl bg-[#eaf5ed] p-4 text-[#31954a]"><LockKeyhole className="h-7 w-7" /></div><div><p className="text-lg text-slate-500">Gender</p><p className="text-2xl font-bold capitalize">{user.gender}</p></div></div>
+              <div className="flex items-start gap-5 py-5"><div className="rounded-2xl bg-[#eaf5ed] p-4 text-[#31954a]"><MapPin className="h-7 w-7" /></div><div><p className="text-lg text-slate-500">Preferred destination</p><p className="text-2xl font-bold">{hallName}</p></div></div>
+            </div>
+          )}
+        </section>
       </div>
-
-      {/* Editable: Password */}
-      <div>
-        <p>Password: ••••••</p>
-        {editing !== "password" && (
-          <button type="button" onClick={() => startEdit("password")}>Change</button>
-        )}
-        {editing === "password" && (
-          <>
-            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New password" />
-            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm password" />
-            <button type="button" onClick={handleSave} disabled={busy}>Save</button>
-            <button type="button" onClick={cancelEdit}>Cancel</button>
-          </>
-        )}
-      </div>
-
-      {/* Editable: Preferred Hall */}
-      <div>
-        <p>Preferred Hall: {user.preferred_hall_id ?? "Not set"}</p>
-        {editing !== "hall" && (
-          <button type="button" onClick={() => startEdit("hall")}>Edit</button>
-        )}
-        {editing === "hall" && (
-          <>
-            <select value={newHallId} onChange={(e) => setNewHallId(e.target.value as HallId)}>
-              {HALLS.map((hall) => (
-                <option key={hall.id} value={hall.id}>{hall.name}</option>
-              ))}
-            </select>
-            <button type="button" onClick={handleSave} disabled={busy}>Save</button>
-            <button type="button" onClick={cancelEdit}>Cancel</button>
-          </>
-        )}
-      </div>
-
-      {error && <p>{error}</p>}
-    </div>
+    </main>
   );
 };
 

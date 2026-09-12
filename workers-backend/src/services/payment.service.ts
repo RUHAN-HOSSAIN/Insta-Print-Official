@@ -63,18 +63,32 @@ export async function claimPayment(
 
   const { data: candidate, error: lookupError } = await admin
     .from("mfs_transactions")
-    .select("id")
+    .select("id, status, use_for")
     .eq("trx_id", normalizedTxnId)
     .maybeSingle();
 
   if (lookupError) throw new PaymentStateError("Unable to verify payment", "PAYMENT_NOT_FOUND");
-  if (!candidate) throw new PaymentStateError("Payment not found", "PAYMENT_NOT_FOUND");
+  if (!candidate) {
+    throw new PaymentStateError(
+      "Your payment data has not reached us yet. Please try again later.",
+      "PAYMENT_NOT_FOUND",
+    );
+  }
+  if (candidate.status !== "not_used" || candidate.use_for !== null) {
+    throw new PaymentStateError(
+      candidate.status === "processing"
+        ? "This payment is already being processed. Please try again later."
+        : "This payment has already been used.",
+      "PAYMENT_CLAIM_FAILED",
+    );
+  }
 
   const { data, error } = await admin
     .from("mfs_transactions")
     .update({ status: "processing" })
     .eq("id", candidate.id)
     .eq("status", "not_used")
+    .is("use_for", null)
     .select("id, provider, transaction_type, amount, trx_id, counterparty_identifier, status, use_for")
     .maybeSingle();
 

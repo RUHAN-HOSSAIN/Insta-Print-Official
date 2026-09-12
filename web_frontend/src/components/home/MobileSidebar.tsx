@@ -4,6 +4,7 @@ import { navData } from "../../constant/navData";
 import { legal } from "../../constant/footerData";
 import { handleHeaderNavClick } from "../../utils/headerScroll";
 import type { User } from "../../context/AuthContext";
+import { ProfileIcon, WalletIcon } from "../../assets/icons/Icons";
 
 type MobileSidebarProps = {
   isOpen: boolean;
@@ -29,7 +30,7 @@ const MobileSidebar = ({
       {/* BACKDROP */}
       <div
         onClick={onClose}
-        className={`sm:hidden fixed inset-x-0 bottom-0 z-40
+        className={`md:hidden fixed inset-x-0 bottom-0 z-40
           bg-black/30 backdrop-blur-[2px]
           transition-opacity duration-500
           ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
@@ -38,7 +39,7 @@ const MobileSidebar = ({
 
       {/* SIDEBAR PANEL */}
       <div
-        className={`sm:hidden fixed right-0 bottom-0 z-45
+        className={`md:hidden fixed right-0 bottom-0 z-45
           bg-white font-spaceG shadow-2xl
           overflow-y-auto overflow-x-hidden
           w-[min(80vw,340px)]
@@ -80,12 +81,50 @@ const MobileSidebar = ({
 
           {user ? (
             <div className="mt-6 flex flex-col gap-3">
-              <Link to="/dashboard" onClick={onClose} className="text-center font-semibold text-green-700">Wallet: ৳ {user.wallet_balance.toFixed(2)}</Link>
-              <Link to="/dashboard/profile" onClick={onClose} className="rounded-md bg-blue-700 px-4 py-3 text-center text-white">Profile</Link>
-              <button type="button" onClick={() => { onLogout(); onClose(); }} className="text-slate-600">Log out</button>
+              <div className="flex items-center gap-4 text-sm text-gray-700">
+                <Link
+                  to="/dashboard/profile"
+                  onClick={onClose}
+                  className="rounded-md bg-blue-700 px-4 py-2 text-center text-white shadow-sm flex items-center justify-center gap-1 font-semibold transition hover:bg-blue-800"
+                >
+                  <ProfileIcon className="h-5 w-5" />
+                  Profile
+                </Link>
+
+                <Link
+                  to="/dashboard/topup"
+                  onClick={onClose}
+                  className="w-full text-center font-semibold text-green-700 flex items-center justify-center gap-1 rounded-md border border-blue-100 shadow-sm p-2 text-sm transition"
+                >
+                  <WalletIcon className="inline h-5 w-5 mr-1" />
+                  <span>৳ {user.wallet_balance.toFixed(2)}</span>
+                </Link>
+              </div>
+
+              
+
+              <button
+                type="button"
+                onClick={() => {
+                  onLogout();
+                  onClose();
+                }}
+                className="rounded-md mt-4 bg-red-500 px-4 py-3 text-center text-white shadow-sm font-semibold transition"
+              >
+                Log out
+              </button>
             </div>
           ) : (
-            <button type="button" onClick={() => { onClose(); onOpenAuth("login"); }} className="mt-6 w-full rounded-md bg-blue-700 px-4 py-3 text-center text-white transition-all hover:bg-blue-800">Sign In</button>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenAuth("login");
+              }}
+              className="mt-6 w-full rounded-md bg-blue-700 px-4 py-3 text-center text-white shadow-sm font-semibold transition-all"
+            >
+              Sign In
+            </button>
           )}
 
           <div className="flex text-xs flex-wrap gap-4 mt-6 text-gray-600">

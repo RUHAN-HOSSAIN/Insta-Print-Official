@@ -15,8 +15,8 @@ export const contactData: ContactItem[] = [
     title: "Our Location",
     description: (
       <>
-        New Male Hall-2
-        <br />
+        {/* New Male Hall-2
+        <br /> */}
         RUET Campus
         <br />
         Rajshahi-6204, Bangladesh
