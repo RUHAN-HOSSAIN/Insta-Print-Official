@@ -38,8 +38,14 @@ const Body = () => {
   const [transactionId, setTransactionId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("wallet");
   const [formError, setFormError] = useState("");
-  const [validationField, setValidationField] = useState<"files" | "hall" | "transaction" | "cover-letter" | null>(null);
-  const [popup, setPopup] = useState<{ tone: "success" | "warning" | "error" | "info"; title: string; message: string } | null>(null);
+  const [validationField, setValidationField] = useState<
+    "files" | "hall" | "transaction" | "cover-letter" | null
+  >(null);
+  const [popup, setPopup] = useState<{
+    tone: "success" | "warning" | "error" | "info";
+    title: string;
+    message: string;
+  } | null>(null);
   const [printerKey, setPrinterKey] = useState(0);
   const activePaymentMethod = loggedUser ? paymentMethod : "direct";
 
@@ -50,22 +56,29 @@ const Body = () => {
   const handleFilesSelected = (selectedFiles: File[]) => {
     setValidationField(null);
     const availableSlots = 10 - printFiles.files.length;
-    const acceptedFiles = selectedFiles.filter((file) => {
-      const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
-      const isImage = ["image/jpeg", "image/png"].includes(file.type) || /\.(jpe?g|png)$/i.test(file.name);
-      if (!isPdf && !isImage) {
-        return false;
-      }
-      const maxSize = isImage ? 5 * 1024 * 1024 : 15 * 1024 * 1024;
-      if (file.size > maxSize) {
-        return false;
-      }
-      return true;
-    }).slice(0, Math.max(availableSlots, 0));
+    const acceptedFiles = selectedFiles
+      .filter((file) => {
+        const isPdf =
+          file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+        const isImage =
+          ["image/jpeg", "image/png"].includes(file.type) ||
+          /\.(jpe?g|png)$/i.test(file.name);
+        if (!isPdf && !isImage) {
+          return false;
+        }
+        const maxSize = isImage ? 5 * 1024 * 1024 : 15 * 1024 * 1024;
+        if (file.size > maxSize) {
+          return false;
+        }
+        return true;
+      })
+      .slice(0, Math.max(availableSlots, 0));
 
     if (acceptedFiles.length !== selectedFiles.length) {
       setValidationField("files");
-      setFormError("PDF files can be up to 15 MB; JPG/PNG images can be up to 5 MB, with a maximum of 10 files.");
+      setFormError(
+        "PDF files can be up to 15 MB; JPG/PNG images can be up to 5 MB, with a maximum of 10 files.",
+      );
     }
     if (acceptedFiles.length) printFiles.addFiles(acceptedFiles);
   };
@@ -115,15 +128,28 @@ const Body = () => {
   const handlePrint = async () => {
     setFormError("");
     setValidationField(null);
-    if (!printFiles.files.length) return showValidation("files", "Please upload at least one file.");
-    if (printFiles.files.some((file) => {
-      const isImage = file.type === "image/jpeg" || file.type === "image/png" || /\.(jpe?g|png)$/i.test(file.name);
-      return file.size > (isImage ? 5 : 15) * 1024 * 1024;
-    }))
-      return showValidation("files", "PDF files can be up to 15 MB; JPG/PNG images can be up to 5 MB.");
-    if (!hallId) return showValidation("hall", "Please select a collection hall.");
+    if (!printFiles.files.length)
+      return showValidation("files", "Please upload at least one file.");
+    if (
+      printFiles.files.some((file) => {
+        const isImage =
+          file.type === "image/jpeg" ||
+          file.type === "image/png" ||
+          /\.(jpe?g|png)$/i.test(file.name);
+        return file.size > (isImage ? 5 : 15) * 1024 * 1024;
+      })
+    )
+      return showValidation(
+        "files",
+        "PDF files can be up to 15 MB; JPG/PNG images can be up to 5 MB.",
+      );
+    if (!hallId)
+      return showValidation("hall", "Please select a collection hall.");
     if (!printerOnline)
-      return showValidation("hall", "The selected hall printer must be online.");
+      return showValidation(
+        "hall",
+        "The selected hall printer must be online.",
+      );
     if (activePaymentMethod === "direct" && !transactionId.trim())
       return showValidation("transaction", "Please enter your transaction ID.");
     if (
@@ -131,7 +157,10 @@ const Body = () => {
       !loggedUser &&
       (!coverLetterName.trim() || !/^\d{7}$/.test(coverLetterRoll))
     )
-      return showValidation("cover-letter", "Enter a cover-letter name and a valid 7 digit roll.");
+      return showValidation(
+        "cover-letter",
+        "Enter a cover-letter name and a valid 7 digit roll.",
+      );
 
     setIsBusy(true);
     try {
@@ -143,13 +172,19 @@ const Body = () => {
       );
       const convertedFiles = await Promise.all(
         files.map((file) => {
-          const isImage = file.type === "image/jpeg" || file.type === "image/png" || /\.(jpe?g|png)$/i.test(file.name);
+          const isImage =
+            file.type === "image/jpeg" ||
+            file.type === "image/png" ||
+            /\.(jpe?g|png)$/i.test(file.name);
           return isImage ? convertImageToPdf(file) : file;
         }),
       );
       files = convertedFiles;
       if (files.some((file) => file.size > 15 * 1024 * 1024)) {
-        return showValidation("files", "Each final PDF must be 15 MB or smaller.");
+        return showValidation(
+          "files",
+          "Each final PDF must be 15 MB or smaller.",
+        );
       }
       if (coverLetterEnabled) {
         const cover = await createCoverLetterPdf(
@@ -165,10 +200,16 @@ const Body = () => {
       }
       files = await Promise.all(files.map(reversePdfPages));
       if (files.some((file) => file.size > 15 * 1024 * 1024)) {
-        return showValidation("files", "Each final PDF must be 15 MB or smaller.");
+        return showValidation(
+          "files",
+          "Each final PDF must be 15 MB or smaller.",
+        );
       }
       if (metadata.some((item) => !item))
-        return showValidation("files", "Please wait until every PDF page count is ready.");
+        return showValidation(
+          "files",
+          "Please wait until every PDF page count is ready.",
+        );
       const details = metadata as PrintFile[];
       const amount = roundPrintAmount(
         details.reduce((sum, item) => sum + item.subtotal, 0),
@@ -178,7 +219,10 @@ const Body = () => {
         0,
       );
       if (amount <= 0)
-        return showValidation("files", "Calculated amount must be greater than zero.");
+        return showValidation(
+          "files",
+          "Calculated amount must be greater than zero.",
+        );
 
       const result = await submitPrintJob(
         {
@@ -194,44 +238,106 @@ const Body = () => {
         files,
         token, // ← যোগ করো
       );
-      if (typeof result.wallet_balance === "number") updateUser({ wallet_balance: result.wallet_balance });
+      if (typeof result.wallet_balance === "number")
+        updateUser({ wallet_balance: result.wallet_balance });
       if (result.status === "insufficient_payment") {
-        setPopup({ tone: "warning", title: "Payment received, printing stopped", message: result.message ?? "Your payment was added to your wallet. Please top up the difference and try again." });
+        setPopup({
+          tone: "warning",
+          title: "Payment received, printing stopped",
+          message:
+            result.message ??
+            "Your payment was added to your wallet. Please top up the difference and try again.",
+        });
       } else if (result.overpaid && result.wallet_credited) {
-        setPopup({ tone: "success", title: "Printing submitted", message: `Your print request was submitted successfully. ৳${result.wallet_credited.toFixed(2)} extra payment was added to your wallet.` });
+        setPopup({
+          tone: "success",
+          title: "Printing submitted",
+          message: `Your print request was submitted successfully. ৳${result.wallet_credited.toFixed(2)} extra payment was added to your wallet.`,
+        });
       } else if (result.overpaid) {
-        setPopup({ tone: "warning", title: "Printing submitted with extra payment", message: `Your calculated amount was ৳${amount.toFixed(2)}, but you paid ৳${result.amount_paid?.toFixed(2) ?? "more"}. Please contact our team to resolve the extra payment.` });
+        setPopup({
+          tone: "warning",
+          title: "Printing submitted with extra payment",
+          message: `Your calculated amount was ৳${amount.toFixed(2)}, but you paid ৳${result.amount_paid?.toFixed(2) ?? "more"}. Please contact our team to resolve the extra payment.`,
+        });
       } else {
-        setPopup({ tone: "success", title: "Printing submitted successfully", message: `${result.totalFiles ?? files.length} file(s) were uploaded and sent for printing.` });
+        setPopup({
+          tone: "success",
+          title: "Printing submitted successfully",
+          message: `${result.totalFiles ?? files.length} file(s) were uploaded and sent for printing.`,
+        });
       }
     } catch (error) {
       if (error instanceof PrintApiError) {
-        const paid = typeof error.details.amount_paid === "number" ? ` You paid ৳${error.details.amount_paid.toFixed(2)}` : "";
-        const required = typeof error.details.amount_required === "number" ? `, but ৳${error.details.amount_required.toFixed(2)} was required.` : ".";
+        const paid =
+          typeof error.details.amount_paid === "number"
+            ? ` You paid ৳${error.details.amount_paid.toFixed(2)}`
+            : "";
+        const required =
+          typeof error.details.amount_required === "number"
+            ? `, but ৳${error.details.amount_required.toFixed(2)} was required.`
+            : ".";
         const code = error.details.code;
         if (code === "PAYMENT_NOT_FOUND") {
-          setPopup({ tone: "warning", title: "Payment not received yet", message: "Your payment information has not reached us yet. Please try again after some time." });
+          setPopup({
+            tone: "warning",
+            title: "Payment not received yet",
+            message:
+              "Your payment information has not reached us yet. Please try again after some time.",
+          });
         } else if (code === "PAYMENT_ALREADY_USED") {
-          setPopup({ tone: "warning", title: "Payment already used", message: "Printing has already been completed using this payment." });
+          setPopup({
+            tone: "warning",
+            title: "Payment already used",
+            message: "Printing has already been completed using this payment.",
+          });
         } else if (code === "INSUFFICIENT_PAYMENT") {
-          setPopup({ tone: "warning", title: "Printing rejected", message: `${paid}${required} Printing was rejected. Please reduce your files so the calculated amount fits your payment and try again.` });
+          setPopup({
+            tone: "warning",
+            title: "Printing rejected",
+            message: `${paid}${required} Printing was rejected. Please reduce your files so the calculated amount fits your payment and try again.`,
+          });
         } else if (code === "PAYMENT_PROCESSING") {
-          setPopup({ tone: "warning", title: "Payment is being processed", message: "This payment is already being processed. Please try again later." });
+          setPopup({
+            tone: "warning",
+            title: "Payment is being processed",
+            message:
+              "This payment is already being processed. Please try again later.",
+          });
         } else {
-          setPopup({ tone: "error", title: "Server error", message: "Something went wrong while processing your print request. Please try again after some time." });
+          setPopup({
+            tone: "error",
+            title: "Server error",
+            message:
+              "Something went wrong while processing your print request. Please try again after some time.",
+          });
         }
       } else {
-        setPopup({ tone: "error", title: "Printing could not be submitted", message: error instanceof Error ? error.message : "Please try again later." });
+        setPopup({
+          tone: "error",
+          title: "Printing could not be submitted",
+          message:
+            error instanceof Error ? error.message : "Please try again later.",
+        });
       }
     } finally {
       setIsBusy(false);
     }
   };
 
-  const showValidation = (field: "files" | "hall" | "transaction" | "cover-letter", message: string) => {
+  const showValidation = (
+    field: "files" | "hall" | "transaction" | "cover-letter",
+    message: string,
+  ) => {
     setFormError(message);
     setValidationField(field);
-    window.setTimeout(() => document.getElementById(`print-${field}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
+    window.setTimeout(
+      () =>
+        document
+          .getElementById(`print-${field}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" }),
+      0,
+    );
   };
 
   const errorMentions = (field: string) =>
@@ -250,7 +356,13 @@ const Body = () => {
     <>
       <div style={{ height: "var(--header-height, 72px)" }} />
       <div className="relative px-7 pt-15 pb-20 min-[500px]:px-10 sm:px-13 md:px-16 lg:px-20 xl:px-25 2xl:px-30">
-        <FeedbackPopup open={Boolean(popup)} tone={popup?.tone ?? "info"} title={popup?.title ?? ""} message={popup?.message ?? ""} onClose={() => setPopup(null)} />
+        <FeedbackPopup
+          open={Boolean(popup)}
+          tone={popup?.tone ?? "info"}
+          title={popup?.title ?? ""}
+          message={popup?.message ?? ""}
+          onClose={() => setPopup(null)}
+        />
         <div
           className="pointer-events-none absolute inset-0 -z-5 opacity-100"
           style={{
@@ -291,18 +403,18 @@ const Body = () => {
             className={`flex h-fit flex-col gap-6 rounded-lg  px-7 pt-15 pb-9 shadow-[0px_0px_10px_rgba(0,0,0,0.2)] lg:p-10 bg-white ${printFiles.files.length === 0 ? "w-full md:mx-auto max-w-xl" : ""}`}
           >
             <div id="print-files" className="relative">
-            <FileUploadBox
-              onFilesSelected={handleFilesSelected}
-              isDragging={isDragging}
-              onDragOver={(event) => {
-                event.preventDefault();
-                setIsDragging(true);
-              }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={handleDrop}
-              hasError={validationField === "files"}
-              errorMessage={formError}
-            />
+              <FileUploadBox
+                onFilesSelected={handleFilesSelected}
+                isDragging={isDragging}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+                hasError={validationField === "files"}
+                errorMessage={formError}
+              />
             </div>
             {printFiles.files.length > 0 && (
               <div className="mt-5 flex flex-col gap-7 font-roboto">
@@ -364,7 +476,9 @@ const Body = () => {
                   setFormError("");
                 }}
                 hasError={errorMentions("hall")}
-                errorMessage={validationField === "hall" ? formError : undefined}
+                errorMessage={
+                  validationField === "hall" ? formError : undefined
+                }
               />
               <PaymentMethodsPanel
                 totalPrice={totalPrice}

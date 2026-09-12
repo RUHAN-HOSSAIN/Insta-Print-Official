@@ -97,7 +97,7 @@ const Footer = () => {
 
         <div className="z-10 flex-6/10 w-full flex max-[400px]:flex-col gap-15 justify-between max-sm:pt-20 max-sm:pb-10 sm:pr-20 md:pr-30 lg:pr-50">
           {/* Company links */}
-          <div className="text-shadow-xs flex flex-col gap-3">
+          <div className="text-shadow-2xs flex flex-col gap-3">
             <h4 className="text-base font-semibold tracking-wider uppercase mb-5">
               Company
             </h4>
@@ -120,7 +120,7 @@ const Footer = () => {
           </div>
 
           {/* Legal links */}
-          <div className="text-shadow-xs flex flex-col gap-3">
+          <div className="text-shadow-2xs flex flex-col gap-3">
             <h4 className="text-base font-semibold tracking-wider uppercase mb-5">
               Legal
             </h4>
@@ -137,7 +137,7 @@ const Footer = () => {
         </div>
 
         <div className="z-10 flex-3/10 min-w-0 w-full flex flex-col gap-3">
-          <h4 className="text-shadow-sm text-base font-semibold tracking-wider uppercase mb-5">
+          <h4 className="text-shadow-2xs text-base font-semibold tracking-wider uppercase mb-5">
             Send feedback
           </h4>
 

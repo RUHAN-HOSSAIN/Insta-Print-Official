@@ -31,7 +31,7 @@ export const contactData: ContactItem[] = [
     description: (
       <>
         Available Sat - Fri <br />
-        except during class hours
+        After 5 pm to 12 am
       </>
     ),
     icon: WhatsappIcon,
@@ -50,7 +50,7 @@ export const contactData: ContactItem[] = [
   {
     id: 3,
     title: "Phone Support",
-    description: <>Available Sat-Fri, 9 pm - 12 am</>,
+    description: <>Available Sat-Fri<br /> After 9 pm to 12 am</>,
     icon: CallIcon,
     iconClassName: "text-blue-500",
     phone: (

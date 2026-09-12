@@ -17,9 +17,13 @@ const Profile = () => {
   const [newName, setNewName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [newHallId, setNewHallId] = useState<HallId | "">(activeHalls[0]?.id ?? "");
+  const [newHallId, setNewHallId] = useState<HallId | "">(
+    activeHalls[0]?.id ?? "",
+  );
   const [error, setError] = useState("");
-  const [validationField, setValidationField] = useState<"name" | "hall" | "password" | null>(null);
+  const [validationField, setValidationField] = useState<
+    "name" | "hall" | "password" | null
+  >(null);
   const [popup, setPopup] = useState<{
     tone: "success" | "error";
     title: string;
@@ -32,7 +36,9 @@ const Profile = () => {
   const startEdit = () => {
     setError("");
     setNewName(user.name);
-    const preferredHall = activeHalls.find((hall) => hall.id === user.preferred_hall_id);
+    const preferredHall = activeHalls.find(
+      (hall) => hall.id === user.preferred_hall_id,
+    );
     setNewHallId(preferredHall?.id ?? activeHalls[0]?.id ?? "");
     setNewPassword("");
     setConfirmPassword("");
@@ -58,7 +64,9 @@ const Profile = () => {
       return;
     }
     if (newPassword && !/^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(newPassword)) {
-      setError("Password must be at least 6 characters with one letter and one digit.");
+      setError(
+        "Password must be at least 6 characters with one letter and one digit.",
+      );
       setValidationField("password");
       return;
     }
@@ -152,7 +160,7 @@ const Profile = () => {
   ];
 
   return (
-    <main className=" min-h-screen bg--[#f5f8fc] px-6 sm:px-8 pb-16 pt-(--header-height,72px) font-spaceG text-slate-900">
+    <main className=" min-h-screen bg-[#f5f8fc] px-6 sm:px-8 pb-16 pt-(--header-height,72px) font-spaceG text-slate-900">
       <FeedbackPopup
         open={Boolean(popup)}
         tone={popup?.tone ?? "error"}
@@ -160,16 +168,20 @@ const Profile = () => {
         message={popup?.message ?? ""}
         onClose={() => setPopup(null)}
       />
-      <div className="z-10 mx-auto max-w-2xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-2 py-6">
+      <div className="z-10 mx-auto max-w-xl">
+        <div className="flex items-center justify-between border-b border-slate-200 px-2 pt-6 pb-4">
           <div className="flex items-center gap-3">
             <span className="text-sm sm:text-base font-semibold text-slate-500">
               Dashboard /{" "}
-              <span className="text-[#1967d2] underline underline-offset-2">
+              <button
+                onClick={() => setEditing(false)}
+                className="text-[#1967d2] underline underline-offset-2 hover:scale-102 transition-all hover:underline-offset-3"
+              >
                 Profile
-              </span>
+              </button>
             </span>
           </div>
+
           <button
             type="button"
             onClick={editing ? cancelEdit : startEdit}
@@ -194,10 +206,10 @@ const Profile = () => {
           />
 
           <div className="z-50 flex flex-col items-center text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-[0_0px_15px_rgba(0,0,0,0.5)] sm:h-24 sm:w-24">
-              <UserRound className="h-10 w-10 text-blue-600" />
+            <div className="flex h-18 w-18 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-white shadow-[0_0px_15px_rgba(0,0,0,0.5)]">
+              <UserRound className="h-8 w-8 sm:h-9 sm:w-9 text-blue-600" />
             </div>
-            <h1 className="mt-5 text-xl sm:text-2xl lg:text-3xl font-bold text-shadow-lg">
+            <h1 className="mt-5 text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-shadow-lg">
               {user.name}
             </h1>
             <p className="mt-2 sm:text-md  lg:text-lg text-slate-100 text-shadow-lg">
@@ -212,7 +224,9 @@ const Profile = () => {
                   Full name
                 </span>
                 <div className="relative">
-                  <FieldWarning message={validationField === "name" ? error : undefined} />
+                  <FieldWarning
+                    message={validationField === "name" ? error : undefined}
+                  />
                   <input
                     value={newName}
                     onChange={(e) => {
@@ -222,7 +236,7 @@ const Profile = () => {
                         setError("");
                       }
                     }}
-                    className={`w-full rounded-lg text-gray-800 border border-slate-200 bg-slate-50 px-5 py-2 text-md sm:text-lg outline-none focus:border-[#31954a] ${validationField === "name" ? "border-amber-500 ring-2 ring-amber-100" : ""}`}
+                    className={`w-full rounded-lg text-gray-800 border border-slate-200 bg-slate-50 px-5 py-2 text-sm sm:text-base outline-none focus:border-[#31954a] shadow-xl ${validationField === "name" ? "border-amber-500 ring-2 ring-amber-100" : ""}`}
                   />
                 </div>
               </label>
@@ -231,7 +245,9 @@ const Profile = () => {
                   Preferred destination
                 </span>
                 <div className="relative">
-                  <FieldWarning message={validationField === "hall" ? error : undefined} />
+                  <FieldWarning
+                    message={validationField === "hall" ? error : undefined}
+                  />
                   <StyledSelect
                     id="update-hall-select"
                     value={newHallId}
@@ -257,7 +273,11 @@ const Profile = () => {
                     New password
                   </span>
                   <div className="relative">
-                    <FieldWarning message={validationField === "password" ? error : undefined} />
+                    <FieldWarning
+                      message={
+                        validationField === "password" ? error : undefined
+                      }
+                    />
                     <input
                       type="password"
                       value={newPassword}
@@ -269,7 +289,7 @@ const Profile = () => {
                         }
                       }}
                       placeholder="Leave blank to keep it"
-                      className={`w-full rounded-lg text-gray-800 border border-slate-200 bg-slate-50 px-5 py-2 text-md sm:text-lg outline-none focus:border-[#31954a] ${validationField === "password" ? "border-amber-500 ring-2 ring-amber-100" : ""}`}
+                      className={`w-full rounded-lg text-gray-800 border border-slate-200 bg-slate-50 px-5 py-2 text-sm sm:text-base outline-none focus:border-[#31954a] shadow-lg ${validationField === "password" ? "border-amber-500 ring-2 ring-amber-100" : ""}`}
                     />
                   </div>
                 </label>
@@ -288,7 +308,7 @@ const Profile = () => {
                       }
                     }}
                     placeholder="Repeat new password"
-                    className={`w-full rounded-lg text-gray-800 border border-slate-200 bg-slate-50 px-5 py-2 text-md sm:text-lg outline-none focus:border-[#31954a] ${validationField === "password" ? "border-amber-500 ring-2 ring-amber-100" : ""}`}
+                    className={`w-full rounded-lg text-gray-800 border border-slate-200 bg-slate-50 px-5 py-2 text-sm sm:text-base outline-none focus:border-[#31954a] shadow-lg ${validationField === "password" ? "border-amber-500 ring-2 ring-amber-100" : ""}`}
                   />
                 </label>
               </div>
@@ -296,14 +316,20 @@ const Profile = () => {
                 type="button"
                 onClick={handleSave}
                 disabled={busy}
-                className=" relative z-50 flex w-full items-center justify-center gap-3 rounded-full bg-green-600 px-5 py-3 text-lg font-bold text-white shadow-lg shadow-green-900/15 transition hover:bg-[#176d38] disabled:opacity-60"
+                className=" relative z-50 flex w-full items-center justify-center gap-3 rounded-full bg-green-600 px-5 py-2 text-base sm:text-lg font-bold text-white shadow-lg shadow-green-900/15 transition hover:bg-[#176d38] disabled:opacity-60"
               >
                 <Save className="h-5 w-5" />
                 {busy ? "Saving changes..." : "Save all changes"}
               </button>
             </div>
           ) : (
-            <div className="z-50 mt-10 mb-2 divide-y divide-slate-200 rounded-2xl bg-[#fbfcfe] px-5 sm:px-8 shadow-[0_0px_15px_rgba(0,0,0,0.5)]">
+            <div className="relative mt-10 mb-2 divide-y divide-slate-200 rounded-2xl bg-gray-50 px-5 sm:px-8 py-2 pb-6 shadow-[0_0px_15px_rgba(0,0,0,0.5)]">
+              {/* <div className="float-page absolute -top-8 -right-6 lg:right-5 lg:w-20 lg:h-26 bg-blue-400 rounded-lg shadow-md p-3 flex flex-col gap-2">
+                <div className="h-full text-white font-fingerPaint flex items-center justify-center text-lg sm:text-xl font-bold">
+                  Insta <br/> Print
+                </div>
+              </div> */}
+
               {userData.map((value, key) => (
                 <div className="flex items-center gap-5 py-5" key={key}>
                   <div className="rounded-md p-1.5 sm:p-2 text-blue-600 shadow-[0_0px_5px_rgba(0,0,0,0.3)]">
@@ -313,7 +339,7 @@ const Profile = () => {
                     <p className="text-xs sm:text-sm text-slate-500 font-robot tracking-wider">
                       {value.label}
                     </p>
-                    <p className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 font-roboto tracking-wider text-shadow-2xs">
+                    <p className="text-sm sm:text-base md:text-l font-semibold text-gray-900 font-roboto tracking-wider text-shadow-2xs">
                       {value.data}
                     </p>
                   </div>
@@ -321,6 +347,7 @@ const Profile = () => {
               ))}
             </div>
           )}
+          
         </section>
       </div>
     </main>

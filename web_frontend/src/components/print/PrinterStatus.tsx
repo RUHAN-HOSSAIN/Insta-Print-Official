@@ -115,6 +115,7 @@ const PrinterStatus = ({
 
       <label className="relative flex flex-col gap-3 font-roboto font-semibold text-slate-700">
         
+        <FieldWarning message={hasError ? errorMessage : undefined} />
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-sm sm:text-base">Select a hall</h2>
           <button
@@ -130,7 +131,6 @@ const PrinterStatus = ({
             />
           </button>
         </div>
-        <FieldWarning message={hasError ? errorMessage : undefined} />
         <StyledSelect
           id="collection-point"
           value={selectedPoint}

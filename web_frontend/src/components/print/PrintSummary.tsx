@@ -39,27 +39,35 @@ const PrintSummary = ({
     <div className="flex items-center justify-between gap-3 sm:gap-5 lg:gap-7 my-5 mr-2">
       {showTransactionInput && (
         <div id="print-transaction" className="relative w-full">
-          <FieldWarning message={transactionError ? "Please enter your transaction ID." : undefined} />
-          <div className={`shadow-[0px_0px_4px_rgba(0,0,0,0.2)] border border-gray-300 rounded-lg px-3 py-2 flex items-center justify-between gap-3 w-full bg-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-200 ${transactionInputDisabled ? "bg-slate-100 opacity-60" : ""} ${transactionError ? "border-amber-500 ring-2 ring-amber-100" : ""}`}>
-          <input
-            type="text"
-            placeholder={
-              transactionInputDisabled
-                ? "Txn-ID Not required for wallet payment"
-                : "Transaction ID"
+          <FieldWarning
+            message={
+              transactionError ? "Please enter your transaction ID." : undefined
             }
-            value={transactionId}
-            onChange={(event) => onTransactionChange(event.target.value)}
-            disabled={transactionInputDisabled}
-            aria-invalid={transactionError}
-            className="w-full focus:outline-none"
           />
+          <div
+            className={`shadow-[0px_0px_4px_rgba(0,0,0,0.2)] border border-gray-300 rounded-lg px-3 py-2 flex items-center justify-between gap-3 w-full bg-white focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-200 ${transactionInputDisabled ? "bg-slate-100 opacity-60" : ""} ${transactionError ? "border-amber-500 ring-2 ring-amber-100" : ""}`}
+          >
+            <input
+              type="text"
+              placeholder={
+                transactionInputDisabled
+                  ? "Txn-ID Not required for wallet payment"
+                  : "Transaction ID"
+              }
+              value={transactionId}
+              onChange={(event) => onTransactionChange(event.target.value)}
+              disabled={transactionInputDisabled}
+              aria-invalid={transactionError}
+              className="w-full focus:outline-none"
+            />
           </div>
         </div>
       )}
       {coverLetterToggle}
     </div>
-    <div id="print-cover-letter" className="relative">{coverLetterFields}</div>
+    <div id="print-cover-letter" className="relative">
+      {coverLetterFields}
+    </div>
     <div className="flex justify-between items-center text-2xl my-4 mx-2">
       <h2 className="font-medium text-gray-900 max-md:text-white">
         Total Price

@@ -26,24 +26,42 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const DEFAULT_SESSION_MS = 24 * 60 * 60 * 1000;
 const REMEMBERED_SESSION_MS = 7 * 24 * 60 * 60 * 1000;
 
-// ─── Initial state (localStorage থেকে) ───────────────────────────────────────
+const AUTH_KEYS = ["auth_token", "auth_user", "auth_expires_at", "auth_remember_me"];
+
+const clearAuth = (storage: Storage) => {
+  AUTH_KEYS.forEach((key) => storage.removeItem(key));
+};
+
+const getStoredAuth = (): { storage: Storage; token: string } | null => {
+  const sessionToken = sessionStorage.getItem("auth_token");
+  if (sessionToken) {
+    const expiresAt = Number(sessionStorage.getItem("auth_expires_at"));
+    if (expiresAt > Date.now()) return { storage: sessionStorage, token: sessionToken };
+    clearAuth(sessionStorage);
+  }
+
+  const rememberedToken = localStorage.getItem("auth_token");
+  if (rememberedToken) {
+    const expiresAt = Number(localStorage.getItem("auth_expires_at"));
+    const remembered = localStorage.getItem("auth_remember_me") === "true";
+    if (remembered && expiresAt > Date.now()) {
+      return { storage: localStorage, token: rememberedToken };
+    }
+    clearAuth(localStorage);
+  }
+
+  return null;
+};
 
 const getInitialToken = (): string | null => {
-  const expiresAt = Number(localStorage.getItem("auth_expires_at"));
-  if (!expiresAt || expiresAt <= Date.now()) {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("auth_user");
-    localStorage.removeItem("auth_expires_at");
-    return null;
-  }
-  return localStorage.getItem("auth_token");
+  return getStoredAuth()?.token ?? null;
 };
 
 const getInitialUser = (): User | null => {
-  const expiresAt = Number(localStorage.getItem("auth_expires_at"));
-  if (!expiresAt || expiresAt <= Date.now()) return null;
+  const storedAuth = getStoredAuth();
+  if (!storedAuth) return null;
   try {
-    const saved = localStorage.getItem("auth_user");
+    const saved = storedAuth.storage.getItem("auth_user");
     return saved ? (JSON.parse(saved) as User) : null;
   } catch {
     return null;
@@ -57,22 +75,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(getInitialToken);
 
   const login = (newToken: string, newUser: User, rememberMe = false) => {
-    localStorage.setItem("auth_token", newToken);
-    localStorage.setItem("auth_user", JSON.stringify(newUser));
-    localStorage.setItem(
+    const storage = rememberMe ? localStorage : sessionStorage;
+    const otherStorage = rememberMe ? sessionStorage : localStorage;
+    clearAuth(otherStorage);
+    storage.setItem("auth_token", newToken);
+    storage.setItem("auth_user", JSON.stringify(newUser));
+    storage.setItem(
       "auth_expires_at",
       String(Date.now() + (rememberMe ? REMEMBERED_SESSION_MS : DEFAULT_SESSION_MS)),
     );
-    localStorage.setItem("auth_remember_me", String(rememberMe));
+    storage.setItem("auth_remember_me", String(rememberMe));
     setToken(newToken);
     setUser(newUser);
   };
 
   const logout = () => {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("auth_user");
-    localStorage.removeItem("auth_expires_at");
-    localStorage.removeItem("auth_remember_me");
+    clearAuth(localStorage);
+    clearAuth(sessionStorage);
     setToken(null);
     setUser(null);
   };
@@ -80,7 +99,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateUser = (updates: Partial<User>) => {
     if (!user) return;
     const updated = { ...user, ...updates };
-    localStorage.setItem("auth_user", JSON.stringify(updated));
+    const storage = getStoredAuth()?.storage ?? sessionStorage;
+    storage.setItem("auth_user", JSON.stringify(updated));
     setUser(updated);
   };
 

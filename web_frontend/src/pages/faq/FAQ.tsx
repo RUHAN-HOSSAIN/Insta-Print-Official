@@ -78,17 +78,17 @@ const FAQ = () => {
                   <div className="flex items-center justify-between gap-3 cursor-pointer">
                     <h3 className="lg:text-lg font-semibold text-gray-800 tracking-wide">{index + 1}. {faq.question}</h3>
                     <ArrowDownIcon
-                      className={`w-7 h-7 shadow bg-gray-50 rounded-full p-1 text-gray-400 transition-transform duration-300 ${
+                      className={`shrink-0 w-7 h-7 shadow-[0px_0px_5px_rgba(0,0,0,0.2)] bg-gray-50 rounded-full p-1 text-gray-400 transition-transform duration-300 ${
                         isOpen ? "rotate-0" : "rotate-180"
                       }`}
                     />
                   </div>
                   <div
-                    className={`grid transition-all duration-300 ease-in-out ${
+                    className={`grid transition-all duration-300 ease-in-out pr-10 ${
                       isOpen ? "grid-rows-[1fr] opacity-100 pt-3" : "grid-rows-[0fr] opacity-0"
                     }`}
                   >
-                    <p className="text-sm lg:text-base text-gray-700 tracking-wider overflow-hidden">{faq.answer}</p>
+                    <div className="text-sm lg:text-base text-gray-700 tracking-wider overflow-hidden">{faq.answer}</div>
                   </div>
                 </div>
               );
