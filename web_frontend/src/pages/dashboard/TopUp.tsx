@@ -78,7 +78,7 @@ const TopUp = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#f5f8fc] px-6 pb-16 pt-(--header-height,72px) font-spaceG text-slate-900 sm:px-8">
+    <main className="min-h-screen bg-linear-to-t to-[#26065F] from-[#4801EC]  px-6 pb-16 pt-(--header-height,72px) font-spaceG text-slate-900 sm:px-8">
       <FeedbackPopup
         open={Boolean(popup)}
         tone={popup?.tone ?? "error"}
@@ -99,7 +99,7 @@ const TopUp = () => {
             className="pointer-events-none absolute inset-0 opacity-15"
             style={{
               backgroundImage:
-                "radial-gradient(circle, #ffffff 2px, transparent 2px)",
+                "radial-gradient(circle, #ffffff 2px, transparent 1.5px)",
               backgroundSize: "32px 32px",
             }}
           />
@@ -115,8 +115,8 @@ const TopUp = () => {
         </section>
 
         <section className="mt-8">
-          <h1 className="text-2xl font-bold sm:text-3xl">How to top-up</h1>
-          <ul className="font-roboto tracking-wider mt-4 mb-6 list-outside pl-5 list-disc space-y-2 text-sm text-slate-700 sm:text-base">
+          <h1 className="text-2xl font-bold sm:text-3xl text-gray-50">How to top-up</h1>
+          <ul className="font-roboto tracking-wider mt-4 mb-6 list-outside pl-5 list-disc space-y-2 text-sm text-gray-200 sm:text-base">
             <li>
               <b>Send money</b> to either number and enter your transaction ID
             </li>

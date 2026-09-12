@@ -1,12 +1,18 @@
-import { createContext, useState, type ReactNode } from "react";
+import { createContext, useEffect, useState, type ReactNode } from "react";
+import {
+  clearRememberMePreference,
+  getActiveSupabaseClient,
+  setRememberMePreference,
+  supabasePersistent,
+  supabaseSessionOnly,
+} from "../lib/supabase";
 
 // ─── User type ────────────────────────────────────────────────────────────────
-// Backend এর UserMetadata + extra fields
 export interface User {
   id: string;
   roll: number;
   name: string;
-  email: string;               // ruet_stdn_mail
+  email: string;
   gender: "Male" | "Female";
   wallet_balance: number;
   preferred_hall_id: string | null;
@@ -16,8 +22,8 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (token: string, user: User, rememberMe?: boolean) => void;
-  logout: () => void;
+  login: (token: string, user: User, rememberMe?: boolean, refreshToken?: string) => Promise<void>;
+  logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
 }
 
@@ -68,30 +74,111 @@ const getInitialUser = (): User | null => {
   }
 };
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
+const persistAuth = (token: string, user: User, rememberMe: boolean) => {
+  const storage = rememberMe ? localStorage : sessionStorage;
+  const otherStorage = rememberMe ? sessionStorage : localStorage;
+  clearAuth(otherStorage);
+
+  storage.setItem("auth_token", token);
+  storage.setItem("auth_user", JSON.stringify(user));
+  storage.setItem(
+    "auth_expires_at",
+    String(Date.now() + (rememberMe ? REMEMBERED_SESSION_MS : DEFAULT_SESSION_MS)),
+  );
+  storage.setItem("auth_remember_me", String(rememberMe));
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(getInitialUser);
   const [token, setToken] = useState<string | null>(getInitialToken);
+  const [loading, setLoading] = useState(true);
 
-  const login = (newToken: string, newUser: User, rememberMe = false) => {
-    const storage = rememberMe ? localStorage : sessionStorage;
-    const otherStorage = rememberMe ? sessionStorage : localStorage;
-    clearAuth(otherStorage);
-    storage.setItem("auth_token", newToken);
-    storage.setItem("auth_user", JSON.stringify(newUser));
-    storage.setItem(
-      "auth_expires_at",
-      String(Date.now() + (rememberMe ? REMEMBERED_SESSION_MS : DEFAULT_SESSION_MS)),
-    );
-    storage.setItem("auth_remember_me", String(rememberMe));
+  useEffect(() => {
+    const hydrate = async () => {
+      setLoading(true);
+      try {
+        const client = getActiveSupabaseClient();
+        const { data, error } = await client.auth.getSession();
+
+        if (error || !data.session) {
+          clearAuth(localStorage);
+          clearAuth(sessionStorage);
+          clearRememberMePreference();
+          setUser(null);
+          setToken(null);
+          setLoading(false);
+          return;
+        }
+
+        const authUser = getInitialUser();
+        if (authUser) {
+          setUser(authUser);
+          setToken(data.session.access_token);
+        } else {
+          setUser(null);
+          setToken(null);
+        }
+      } catch {
+        setUser(null);
+        setToken(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    hydrate();
+
+    const persistentSubscription = supabasePersistent.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        clearAuth(localStorage);
+        clearAuth(sessionStorage);
+        clearRememberMePreference();
+        setUser(null);
+        setToken(null);
+      }
+    });
+
+    const sessionSubscription = supabaseSessionOnly.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        clearAuth(localStorage);
+        clearAuth(sessionStorage);
+        clearRememberMePreference();
+        setUser(null);
+        setToken(null);
+      }
+    });
+
+    return () => {
+      persistentSubscription.data.subscription.unsubscribe();
+      sessionSubscription.data.subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (newToken: string, newUser: User, rememberMe = false, refreshToken?: string) => {
+    const client = getActiveSupabaseClient();
+    if (refreshToken) {
+      await client.auth.setSession({ access_token: newToken, refresh_token: refreshToken });
+    }
+
+    persistAuth(newToken, newUser, rememberMe);
+    setRememberMePreference(rememberMe);
     setToken(newToken);
     setUser(newUser);
+    if (!rememberMe) {
+      clearAuth(localStorage);
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await getActiveSupabaseClient().auth.signOut();
+    } catch {
+      // Ignore sign-out errors; we still clear local app state.
+    }
+
     clearAuth(localStorage);
     clearAuth(sessionStorage);
+    clearRememberMePreference();
     setToken(null);
     setUser(null);
   };
@@ -105,7 +192,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading: false, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
