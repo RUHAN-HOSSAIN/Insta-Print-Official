@@ -28,16 +28,16 @@ export async function createTopUpRequest(
 
   try {
     const { data: newBalance, error } = await admin.rpc("finalize_wallet_top_up", {
-      p_mfs_id: payment.id,
+      p_pay_id: payment.pay_id,
       p_user_id: userId,
-      p_amount: Number(payment.amount),
+      p_amount: Number(payment.amount_paid),
     });
 
     if (error) throw new Error(error.message);
 
-    return { balance: Number(newBalance), amount: Number(payment.amount) };
+    return { balance: Number(newBalance), amount: Number(payment.amount_paid) };
   } catch (error) {
-    await releasePayment(env, payment.id);
+    await releasePayment(env, payment.pay_id);
     throw error;
   }
 }

@@ -355,7 +355,7 @@ const Body = () => {
   return (
     <>
       <div style={{ height: "var(--header-height, 72px)" }} />
-      <div className="relative px-7 pt-15 pb-20 min-[500px]:px-10 sm:px-13 md:px-16 lg:px-20 xl:px-25 2xl:px-30">
+      <div className="relative px-7 pt-15 pb-20 min-[500px]:px-10 sm:px-13 md:px-16 lg:px-20 xl:px-25 2xl:px-30 bg-gray-50">
         <FeedbackPopup
           open={Boolean(popup)}
           tone={popup?.tone ?? "info"}
@@ -364,7 +364,7 @@ const Body = () => {
           onClose={() => setPopup(null)}
         />
         <div
-          className="pointer-events-none absolute inset-0 -z-5 opacity-100"
+          className="pointer-events-none absolute inset-0 z-0 opacity-100"
           style={{
             backgroundImage: `
               repeating-linear-gradient(45deg, rgba(0,0,0,0.1) 0, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 20px),

@@ -25,6 +25,7 @@ export async function requestSignupOtp(
   email: string,
 ): Promise<void> {
   const admin = getSupabaseAdmin(env);
+  const normalizedEmail = email.trim().toLowerCase();
 
   const { data: existingWallet, error: walletCheckError } = await admin
     .from("user_wallets")
@@ -41,7 +42,7 @@ export async function requestSignupOtp(
 
   const supabase = getSupabaseAnon(env);
   const { error } = await supabase.auth.signInWithOtp({
-    email,
+    email: normalizedEmail,
     options: {
       shouldCreateUser: true,
       data: { roll } as Partial<UserMetadata>,
@@ -87,6 +88,7 @@ export async function completeSignup(
   user: UserMetadata & { id: string; email: string; wallet_balance: number };
 }> {
   const admin = getSupabaseAdmin(env);
+  const normalizedEmail = email.trim().toLowerCase();
 
   const metadata: UserMetadata = {
     roll,
@@ -106,7 +108,13 @@ export async function completeSignup(
 
   const { error: walletError } = await admin
     .from("user_wallets")
-    .insert({ user_id: userId, roll, balance: 0, email });
+    .insert({
+      user_id: userId,
+      name: name.trim(),
+      roll,
+      balance: 0,
+      email: normalizedEmail,
+    });
 
   if (walletError) {
     if (walletError.code === "23505") {
@@ -118,7 +126,7 @@ export async function completeSignup(
   const { data: session, error: sessionError } = await getSupabaseAnon(
     env,
   ).auth.signInWithPassword({
-    email,
+    email: normalizedEmail,
     password,
   });
 
@@ -130,7 +138,7 @@ export async function completeSignup(
     refreshToken: session.session.refresh_token,
     user: {
       id: userId,
-      email,
+      email: normalizedEmail,
       wallet_balance: 0,
       ...metadata,
     },
@@ -149,9 +157,10 @@ export async function loginUser(
   user: UserMetadata & { id: string; email: string; wallet_balance: number };
 }> {
   const admin = getSupabaseAdmin(env);
-  let email = identifier;
+  const normalizedIdentifier = identifier.trim();
+  let email = normalizedIdentifier.toLowerCase();
 
-  if (/^\d{7}$/.test(identifier)) {
+  if (/^\d{7}$/.test(normalizedIdentifier)) {
     // roll দিয়ে user_wallets থেকে সরাসরি user_id বের করো — fast, indexed, কোনো listUsers লাগে না
     const { data: walletRow, error: walletError } = await admin
       .from("user_wallets")
@@ -176,11 +185,15 @@ export async function loginUser(
     throw new Error("Incorrect password or account not found.");
   }
 
-  const { data: wallet } = await admin
+  const { data: wallet, error: walletError } = await admin
     .from("user_wallets")
     .select("balance")
     .eq("user_id", data.user.id)
     .single();
+
+  if (walletError || !wallet) {
+    throw new Error("Account wallet is not available. Please contact support.");
+  }
 
   const metadata = data.user.user_metadata as UserMetadata;
 
@@ -190,7 +203,7 @@ export async function loginUser(
     user: {
       id: data.user.id,
       email: data.user.email!,
-      wallet_balance: Number(wallet?.balance ?? 0),
+      wallet_balance: Number(wallet.balance),
       ...metadata,
     },
   };

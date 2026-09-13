@@ -71,12 +71,16 @@ export async function handleSignupComplete(c: Context<{ Bindings: Env }>) {
         email: string;
         password: string;
         name: string;
-        gender: "male" | "female";
+        gender: "male" | "female" | "Male" | "Female";
         preferred_hall_id: string;
       }>();
 
     if (!user_id || !roll || !email || !password || !name || !gender) {
       return err(c, "All fields are required.");
+    }
+    const normalizedGender = gender.toLowerCase();
+    if (normalizedGender !== "male" && normalizedGender !== "female") {
+      return err(c, "Invalid gender.");
     }
     if (!/^(?=.*[A-Za-z])(?=.*\d).{6,}$/.test(password)) {
       return err(
@@ -92,7 +96,7 @@ export async function handleSignupComplete(c: Context<{ Bindings: Env }>) {
       email,
       password,
       name,
-      gender,
+      normalizedGender,
       preferred_hall_id,
     );
 

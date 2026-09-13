@@ -160,7 +160,7 @@ const Profile = () => {
   ];
 
   return (
-    <main className=" min-h-screen bg-linear-to-t to-[#26065F] from-[#4801EC]  px-6 sm:px-8 pb-16 pt-(--header-height,72px) font-spaceG text-slate-900">
+    <main className="min-h-screen  bg-linear-to-b to-[#26065F] via-[#4801EC] shadow-[0px_15px_0px_rgba(39,6,98,1)] px-6 sm:px-8 pb-16 pt-(--header-height,72px) font-spaceG text-slate-900">
       <FeedbackPopup
         open={Boolean(popup)}
         tone={popup?.tone ?? "error"}
@@ -169,16 +169,10 @@ const Profile = () => {
         onClose={() => setPopup(null)}
       />
       <div className="z-10 mx-auto max-w-xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-2 pt-6 pb-4">
+        <div className="flex items-center justify-between border-b-2 border-slate-300 px-2 pt-6 pb-4">
           <div className="flex items-center gap-3">
-            <span className="text-sm sm:text-base font-semibold text-slate-50">
-              Dashboard /{" "}
-              <button
-                onClick={() => setEditing(false)}
-                className="text-blue-400 underline underline-offset-2 hover:scale-102 transition-all hover:underline-offset-3"
-              >
-                Profile
-              </button>
+            <span className="text-sm sm:text-base lg:text-lg font-jura font-semibold text-slate-800">
+              Welcome, &nbsp;{user.name.split(" ")[0]}
             </span>
           </div>
 
@@ -196,7 +190,7 @@ const Profile = () => {
           </button>
         </div>
 
-        <section className="relative mt-8 rounded-xl bg-linear-to-tr from-violet-800 to-violet-600 text-white px-5 py-8 shadow-[0px_0px_10px_rgba(0,0,0,0.5)] sm:px-12">
+        <section className="relative mt-8 rounded-xl bg-linear-to-tr from-blue-500 to-blue-800 text-white px-5 py-8 sm:py-10 shadow-[0px_0px_10px_rgba(0,0,0,0.5)] sm:px-12">
           <div
             className="absolute inset-0 z-0 opacity-20 pointer-events-none"
             style={{
@@ -323,7 +317,7 @@ const Profile = () => {
               </button>
             </div>
           ) : (
-            <div className="relative mt-10 mb-2 divide-y divide-slate-400 rounded-2xl bg-slate-200 px-5 sm:px-8 py-2 pb-6 shadow-[0_0px_15px_rgba(0,0,0,0.5)]">
+            <div className="relative mt-10 mb-2 divide-y divide-slate-200 rounded-2xl bg-gray-50 px-5 sm:px-8 py-2 shadow-[0_0px_15px_rgba(0,0,0,0.5)]">
               {/* <div className="float-page absolute -top-8 -right-6 lg:right-5 lg:w-20 lg:h-26 bg-blue-400 rounded-lg shadow-md p-3 flex flex-col gap-2">
                 <div className="h-full text-white font-fingerPaint flex items-center justify-center text-lg sm:text-xl font-bold">
                   Insta <br/> Print
@@ -331,15 +325,15 @@ const Profile = () => {
               </div> */}
 
               {userData.map((value, key) => (
-                <div className="flex items-center gap-5 py-5" key={key}>
-                  <div className="rounded-md p-1.5 sm:p-2 text-blue-600 shadow-[0_0px_5px_rgba(0,0,0,0.3)]">
+                <div className="flex items-center gap-5 py-3" key={key}>
+                  <div className="rounded-md p-1.5 sm:p-2 text-blue-600 bg-gray-50 shadow-[0_0px_5px_rgba(0,0,0,0.3)]">
                     {value.icon}
                   </div>
                   <div className="flex flex-col gap-1">
-                    <p className="text-xs sm:text-sm text-slate-500 font-robot tracking-wider">
+                    <p className="text-xs sm:text-sm text-slate-700 font-robot tracking-wider">
                       {value.label}
                     </p>
-                    <p className="text-sm sm:text-base md:text-l font-semibold text-gray-900 font-roboto tracking-wider text-shadow-2xs">
+                    <p className="text-sm sm:text-base md:text-md 2xl:text-lg font-semibold text-gray-900 font-roboto tracking-wider text-shadow-2xs">
                       {value.data}
                     </p>
                   </div>

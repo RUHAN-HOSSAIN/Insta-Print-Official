@@ -78,7 +78,7 @@ const TopUp = () => {
   };
 
   return (
-    <main className="min-h-screen bg-linear-to-t to-[#26065F] from-[#4801EC]  px-6 pb-16 pt-(--header-height,72px) font-spaceG text-slate-900 sm:px-8">
+    <main className="min-h-screen bg-linear-to-b  to-[#26065F] via-[#4801EC] shadow-[0px_15px_0px_rgba(39,6,98,1)] px-6 pb-16 pt-(--header-height,72px) font-spaceG text-slate-900 sm:px-8">
       <FeedbackPopup
         open={Boolean(popup)}
         tone={popup?.tone ?? "error"}
@@ -94,7 +94,7 @@ const TopUp = () => {
           </span>
         </div> */}
 
-        <section className="relative mt-8 rounded-xl bg-linear-to-tr from-[#31954a] to-[#087f70] px-5 py-8 text-white shadow-[0px_0px_10px_rgba(0,0,0,0.35)] sm:px-12">
+        <section className="relative mt-8 rounded-xl bg-linear-to-tr from-green-600 to-green-700 px-5 py-8 text-white shadow-[0px_0px_10px_rgba(0,0,0,0.35)] sm:px-12">
           <div
             className="pointer-events-none absolute inset-0 opacity-15"
             style={{
@@ -105,17 +105,19 @@ const TopUp = () => {
           />
           <div className="relative text-center">
             <WalletIcon className="mx-auto h-12 w-12 sm:h-14 sm:w-14" />
-            <p className="mt-4 text-base font-medium text-white/80 sm:text-lg">
+            <p className="mt-4 text-base font-medium text-white/90 sm:text-lg">
               Current balance
             </p>
-            <p className="mt-2 text-3xl font-bold sm:text-4xl">
+            <p className="mt-2 text-3xl font-bold sm:text-4xl text-white">
               ৳ {user.wallet_balance.toFixed(2)}
             </p>
           </div>
         </section>
 
         <section className="mt-8">
-          <h1 className="text-2xl font-bold sm:text-3xl text-gray-50">How to top-up</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-[26px] font-bold text-gray-50">
+            How to top-up
+          </h1>
           <ul className="font-roboto tracking-wider mt-4 mb-6 list-outside pl-5 list-disc space-y-2 text-sm text-gray-200 sm:text-base">
             <li>
               <b>Send money</b> to either number and enter your transaction ID
@@ -170,7 +172,7 @@ const TopUp = () => {
           onSubmit={handleSubmit}
           className="mt-7 rounded-xl bg-white p-5 shadow-[0_0px_15px_rgba(0,0,0,0.12)] sm:p-7"
         >
-          <label className="relative flex items-center gap-3 rounded-lg border border-[#dcefe0] bg-[#fbfefb] px-4 py-3 text-base font-semibold text-gray-500">
+          <label className="relative flex items-center gap-3 rounded-lg border border-[#dcefe0] bg-[#fbfefb] px-4 py-3 text-base font- text-gray-500">
             {" "}
             <FieldWarning message={fieldError} />
             <CirclePlusIcon className="h-5 w-5 shrink-0" />
@@ -182,7 +184,7 @@ const TopUp = () => {
                 setFieldError("");
               }}
               placeholder="Transaction ID"
-              className={`w-full bg-transparent text-base text-slate-900 outline-none placeholder:text-gray-500 ${fieldError ? "ring-2 ring-amber-300" : ""}`}
+              className={`font-roboto tracking-wider w-full bg-transparent text-base text-slate-900 outline-none placeholder:text-gray-500 ${fieldError ? "ring-2 ring-amber-300" : ""}`}
             />
           </label>
           <button

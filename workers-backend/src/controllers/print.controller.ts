@@ -3,7 +3,7 @@ import { Env } from "../types";
 import { printFile } from "../services/epson.service";
 import { verifyToken, getSupabaseAdmin } from "../services/auth.service";
 import { claimPayment, findUnusedPayment, PaymentStateError, releasePayment } from "../services/payment.service";
-import { createDirectPrintJobReservation, createWalletPrintJob, deletePrintJobReservation, updatePrintJobStatus } from "../services/supabase.service";
+import { createDirectPrintJobReservation, createWalletPrintJob, updatePrintJobStatus } from "../services/supabase.service";
 
 type FileSetting = { copies: number; color: "mono" | "color" };
 type FileMetadata = { name: string; pages: number; copies: number; color: "mono" | "color"; subtotal?: number };
@@ -74,8 +74,8 @@ function validateInput(formData: FormData, files: File[], settings: FileSetting[
 }
 
 export async function submitPrintJob(request: Request, env: Env): Promise<Response> {
-  let jobSiNo: number | null = null;
-  let paymentId: string | null = null;
+  let printId: string | null = null;
+  let payId: string | null = null;
   let walletAmountReserved = 0;
   let submittedJobIds: string[] = [];
   let authenticatedUserId: string | null = null;
@@ -94,29 +94,29 @@ export async function submitPrintJob(request: Request, env: Env): Promise<Respon
     if (input.paymentMethod === "wallet" && !userId) return errorResponse("Wallet payment requires login", 401, { code: "AUTH_REQUIRED", printed: false });
 
     const totalPagePrint = filesMetadata.reduce((total, item) => total + item.pages * item.copies, 0);
-    const commonInput = { hallId: input.hallId, loggedUser, amountCalculated: input.amount, files: filesMetadata, totalFiles: files.length, totalPagePrint };
+    const commonInput = { hallId: input.hallId, loggedUser, userId, amountCalculated: input.amount, files: filesMetadata, totalFiles: files.length, totalPagePrint };
 
     if (input.paymentMethod === "wallet") {
       const job = await createWalletPrintJob(env, commonInput, userId!);
-      jobSiNo = job.si_no;
+      printId = job.print_id;
       walletAmountReserved = input.amount;
       const jobIds: string[] = [];
       submittedJobIds = jobIds;
-      await updatePrintJobStatus(env, jobSiNo, false, [], "uploading");
+      await updatePrintJobStatus(env, printId, false, [], "uploading");
       for (let index = 0; index < files.length; index += 1) {
-        await updatePrintJobStatus(env, jobSiNo, false, jobIds, "printing");
+        await updatePrintJobStatus(env, printId, false, jobIds, "printing");
         jobIds.push(await printFile(env, input.hall.tokenRow, await files[index].arrayBuffer(), files[index].name, settings[index]));
       }
-      await updatePrintJobStatus(env, jobSiNo, true, jobIds, "completed", null);
+      await updatePrintJobStatus(env, printId, true, jobIds, "completed", null);
       walletAmountReserved = 0;
-      return Response.json({ status: "queued", printed: true, totalFiles: files.length, printJobSiNo: jobSiNo, amount_paid: input.amount, amount_required: input.amount, wallet_balance: job.wallet_balance });
+      return Response.json({ status: "queued", printed: true, totalFiles: files.length, printId, amount_paid: input.amount, amount_required: input.amount, wallet_balance: job.wallet_balance });
     }
 
     const txnId = String(formData.get("txn_id") ?? "").trim();
     if (!txnId) return errorResponse("Transaction ID required", 400, { code: "TXN_REQUIRED", printed: false });
 
     const availablePayment = await findUnusedPayment(env, txnId);
-    const amountPaid = Number(availablePayment.amount);
+    const amountPaid = Number(availablePayment.amount_paid);
     const difference = Number((amountPaid - input.amount).toFixed(2));
 
     if (difference < 0 && !loggedUser) return errorResponse(`You paid ৳${amountPaid}, but ৳${input.amount} was required.`, 402, {
@@ -124,53 +124,59 @@ export async function submitPrintJob(request: Request, env: Env): Promise<Respon
     });
 
     const payment = await claimPayment(env, txnId);
-    paymentId = payment.id;
+    payId = payment.pay_id;
     const comment = difference > 0 ? `Overpaid by ৳${difference.toFixed(2)}` : difference < 0 ? `Less payment ৳${amountPaid}` : null;
     directWalletCredit = difference > 0 && userId ? difference : 0;
 
     if (difference < 0) {
       const job = await createDirectPrintJobReservation(env, commonInput, payment, comment);
-      jobSiNo = job.si_no;
-      const { data: newBalance, error } = await getSupabaseAdmin(env).rpc("finalize_logged_underpayment", { p_mfs_id: payment.id, p_user_id: userId, p_amount: amountPaid, p_job_si_no: jobSiNo });
+      printId = job.print_id;
+      const { data: newBalance, error } = await getSupabaseAdmin(env).rpc("finalize_logged_underpayment", { p_pay_id: payment.pay_id, p_user_id: userId, p_amount: amountPaid, p_print_id: printId });
       if (error) throw new Error(error.message);
-      return Response.json({ status: "insufficient_payment", printed: false, payment_claimed: true, wallet_credited: amountPaid, wallet_balance: Number(newBalance), printJobSiNo: jobSiNo, message: `Printing did not start. Your ৳${amountPaid} payment was added to your wallet.` });
+      return Response.json({ status: "insufficient_payment", printed: false, payment_claimed: true, wallet_credited: amountPaid, wallet_balance: Number(newBalance), printId, message: `Printing did not start. Your ৳${amountPaid} payment was added to your wallet.` });
     }
 
     const job = await createDirectPrintJobReservation(env, commonInput, payment, comment);
-    jobSiNo = job.si_no;
+    printId = job.print_id;
     const jobIds: string[] = [];
     submittedJobIds = jobIds;
-    await updatePrintJobStatus(env, jobSiNo, false, [], "uploading");
+    await updatePrintJobStatus(env, printId, false, [], "uploading");
     for (let index = 0; index < files.length; index += 1) {
-      await updatePrintJobStatus(env, jobSiNo, false, jobIds, "printing");
+      await updatePrintJobStatus(env, printId, false, jobIds, "printing");
       jobIds.push(await printFile(env, input.hall.tokenRow, await files[index].arrayBuffer(), files[index].name, settings[index]));
     }
     const { data: walletBalance, error } = await getSupabaseAdmin(env).rpc("finalize_direct_print", {
-      p_mfs_id: payment.id,
-      p_job_si_no: jobSiNo,
+      p_pay_id: payment.pay_id,
+      p_print_id: printId,
       p_job_ids: jobIds,
       p_user_id: userId,
       p_wallet_credit: difference > 0 ? difference : 0,
     });
     if (error) throw new Error(error.message);
-    return Response.json({ status: "queued", printed: true, totalFiles: files.length, printJobSiNo: jobSiNo, amount_paid: amountPaid, amount_required: input.amount, overpaid: difference > 0, wallet_credited: difference > 0 && userId ? difference : 0, ...(difference > 0 && userId ? { wallet_balance: Number(walletBalance) } : {}) });
+    return Response.json({ status: "queued", printed: true, totalFiles: files.length, printId, amount_paid: amountPaid, amount_required: input.amount, overpaid: difference > 0, wallet_credited: difference > 0 && userId ? difference : 0, ...(difference > 0 && userId ? { wallet_balance: Number(walletBalance) } : {}) });
   } catch (error) {
-    if (jobSiNo !== null) {
-      try { await updatePrintJobStatus(env, jobSiNo, false, undefined, "failed", error instanceof Error ? error.message : "Print job failed"); } catch { /* preserve original error */ }
+    if (printId !== null) {
+      try { await updatePrintJobStatus(env, printId, false, undefined, "failed", error instanceof Error ? error.message : "Print job failed"); } catch { /* preserve original error */ }
     }
-    if (paymentId) {
+    if (payId) {
       try {
         if (submittedJobIds.length) {
           await getSupabaseAdmin(env).rpc("finalize_partial_direct_print", {
-            p_mfs_id: paymentId,
-            p_job_si_no: jobSiNo,
+            p_pay_id: payId,
+            p_print_id: printId,
             p_job_ids: submittedJobIds,
             p_user_id: authenticatedUserId,
             p_wallet_credit: directWalletCredit,
           });
         } else {
-          await releasePayment(env, paymentId);
-          if (jobSiNo !== null) await deletePrintJobReservation(env, jobSiNo);
+          if (printId !== null) {
+            await getSupabaseAdmin(env).rpc("rollback_print_payment", {
+              p_pay_id: payId,
+              p_print_id: printId,
+            });
+          } else {
+            await releasePayment(env, payId);
+          }
         }
       } catch { /* preserve original error */ }
     }
@@ -178,6 +184,13 @@ export async function submitPrintJob(request: Request, env: Env): Promise<Respon
       try {
         await getSupabaseAdmin(env).rpc("add_wallet_balance", { p_user_id: authenticatedUserId, p_amount: walletAmountReserved });
       } catch { /* surface the original print error */ }
+    } else if (walletAmountReserved > 0 && submittedJobIds.length && authenticatedUserId) {
+      try {
+        await getSupabaseAdmin(env).rpc("add_wallet_balance", {
+          p_user_id: authenticatedUserId,
+          p_amount: walletAmountReserved,
+        });
+      } catch { /* preserve the original print error */ }
     }
     const message = error instanceof PaymentStateError
       ? error.message

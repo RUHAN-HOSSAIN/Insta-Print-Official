@@ -110,7 +110,7 @@ export async function analyzePdfInkCoverage(
 
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, verbosity: 0 }).promise;
     const numPages = pdf.numPages || 1;
     const pagesToSample = Math.min(3, numPages);
 

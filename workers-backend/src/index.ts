@@ -6,6 +6,7 @@ import { Env } from "./types";
 import { getDeviceStatus } from "./controllers/device.controller";
 import { submitPrintJob } from "./controllers/print.controller";
 import { HallId } from "./config/constants";
+import { handleIncomingMfsSms } from "./mfsManage/mfs.controller";
 
 // New auth + user controllers
 import {
@@ -31,19 +32,19 @@ const app = new Hono<{ Bindings: Env }>();
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 
 app.use("*", cors({
-    origin: (origin, c) => origin === c.env.FRONTEND_URL ? origin : "",
-  }),
-);
+  origin: (origin, c) => {
+    if (!origin) return "*";
 
-// app.use(
-//   "*",
-//   cors({
-//     origin: (origin, c) => {
-//       const allowedOrigins = [c.env.FRONTEND_URL, "http://localhost:5173"];
-//       return allowedOrigins.includes(origin) ? origin : "";
-//     },
-//   }),
-// );
+    const allowedOrigins = [
+      c.env.FRONTEND_URL,
+    ];
+
+    return allowedOrigins.includes(origin) ? origin : "";
+  },
+  allowHeaders: ["Content-Type", "Authorization"],
+  allowMethods: ["GET", "POST", "OPTIONS"],
+}));
+
 
 // ─── Health ───────────────────────────────────────────────────────────────────
 
@@ -57,6 +58,11 @@ app.get("/status", (c) => {
 });
 
 app.post("/print", (c) => submitPrintJob(c.req.raw, c.env));
+
+// ─── MFS SMS ingestion ──────────────────────────────────────────────────────
+
+// Phone app sends every Bkash/Nagad SMS here; only receive-money messages are accepted.
+app.post("/api/mfs/sms", handleIncomingMfsSms);
 
 // ─── Auth routes ──────────────────────────────────────────────────────────────
 
@@ -80,5 +86,6 @@ app.post("/api/user/update-name", handleUpdateName);
 app.post("/api/user/update-password", handleUpdatePassword);
 app.post("/api/user/update-hall", handleUpdateHall);
 app.post("/api/user/topup", handleTopUp);
+
 
 export default app;

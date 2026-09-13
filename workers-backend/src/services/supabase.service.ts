@@ -7,6 +7,7 @@ import { getSupabaseAdmin } from "./auth.service";
 export interface PrintJobInput {
   hallId: string;
   loggedUser: boolean;
+  userId?: string | null;
   txnId?: string;
   amountCalculated: number;
   files: unknown[];
@@ -23,7 +24,7 @@ export async function createWalletPrintJob(
   env: Env,
   input: PrintJobInput,
   userId: string,
-): Promise<{ si_no: number; wallet_balance: number }> {
+): Promise<{ print_id: string; si_no: number; wallet_balance: number }> {
   const admin = getSupabaseAdmin(env);
 
   // Atomic deduction — balance কম থাকলে Postgres error throw করবে
@@ -40,9 +41,8 @@ export async function createWalletPrintJob(
         hall_id: input.hallId,
         logged_user: true,
         payment_method: "wallet",
-        txn_id: null,
         amount_paid: input.amountCalculated,
-        sender_number: null,
+        user_id: userId,
         amount_calculated: input.amountCalculated,
         files: input.files,
         total_files: input.totalFiles,
@@ -51,12 +51,12 @@ export async function createWalletPrintJob(
         status: false,
         lifecycle_status: "pending",
       })
-      .select("si_no")
+      .select("print_id, si_no")
       .single();
 
     if (jobError || !job) throw new Error("Unable to create print job");
 
-    return { si_no: job.si_no, wallet_balance: Number(walletBalance) };
+    return { print_id: job.print_id, si_no: job.si_no, wallet_balance: Number(walletBalance) };
   } catch (error) {
     await admin.rpc("add_wallet_balance", {
       p_user_id: userId,
@@ -69,7 +69,7 @@ export async function createWalletPrintJob(
 // ─── Print job status update — comments কে touch করবো না ───────────────────
 export async function updatePrintJobStatus(
   env: Env,
-  jobSiNo: number,
+  printId: string,
   status: boolean,
   jobIds?: string[],
   lifecycleStatus?: "pending" | "uploading" | "printing" | "completed" | "failed",
@@ -83,19 +83,19 @@ export async function updatePrintJobStatus(
   const { error } = await getSupabaseAdmin(env)
     .from("print_jobs")
     .update(update)
-    .eq("si_no", jobSiNo);
+    .eq("print_id", printId);
 
   if (error) throw new Error("Unable to update print job status");
 }
 
 export async function deletePrintJobReservation(
   env: Env,
-  jobSiNo: number,
+  printId: string,
 ): Promise<void> {
   const { error } = await getSupabaseAdmin(env)
     .from("print_jobs")
     .delete()
-    .eq("si_no", jobSiNo)
+    .eq("print_id", printId)
     .eq("status", false);
 
   if (error) throw new Error("Unable to remove print job reservation");
@@ -158,7 +158,7 @@ export async function createDirectPrintJobReservation(
   input: PrintJobInput,
   payment: MfsTransaction,
   comments: string | null,
-): Promise<{ si_no: number }> {
+): Promise<{ print_id: string; si_no: number }> {
   const admin = getSupabaseAdmin(env);
   const { data: job, error } = await admin
     .from("print_jobs")
@@ -166,9 +166,9 @@ export async function createDirectPrintJobReservation(
       hall_id: input.hallId,
       logged_user: input.loggedUser,
       payment_method: "direct",
-      txn_id: payment.trx_id,
-      amount_paid: Number(payment.amount),
-      sender_number: payment.counterparty_identifier,
+      pay_id: payment.pay_id,
+      user_id: input.userId ?? null,
+      amount_paid: Number(payment.amount_paid),
       amount_calculated: input.amountCalculated,
       files: input.files,
       total_files: input.totalFiles,
@@ -177,9 +177,9 @@ export async function createDirectPrintJobReservation(
       status: false,
       lifecycle_status: "pending",
     })
-    .select("si_no")
+    .select("print_id, si_no")
     .single();
 
   if (error || !job) throw new Error("Unable to create print job reservation");
-  return { si_no: job.si_no };
+  return { print_id: job.print_id, si_no: job.si_no };
 }

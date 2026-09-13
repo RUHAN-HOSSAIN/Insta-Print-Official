@@ -270,7 +270,7 @@ const Header = () => {
               onClick={() => {
                 setAuthModal("login");
               }}
-              className="rounded-2xl bg-blue-700 mr-4 sm:mr-6 px-3 sm:px-4 py-1 text-center text-white shadow-md font-semibold transition-all"
+              className=" text-xs min-[500px]:text-sm sm:text-base rounded-2xl bg-blue-700 mr-4 sm:mr-6 px-3 sm:px-4 py-1 text-center text-white shadow-md font-semibold transition-all"
             >
               Sign In
             </button>
